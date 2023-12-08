@@ -1,0 +1,8 @@
+The GOAT algorithm was originally described in the manuscript titled "The GOAT algorithm for geneset enrichment analysis" by Frank Koopmans (2023).
+Please cite this manuscript when using the implementation provided here, when creating derivative works or when using derivative works.
+
+All code and documentation in the goat R package as a whole is distributed under Apache License (>= 2).
+
+The goat R package includes the 'RunningStat' implementation of "Welford running variance" provided on John Cook's blog at https://www.johndcook.com/blog/standard_deviation/
+
+The goat R package bundles a number of publicly available datasets that were adopted from published scientific manuscripts. Respective PubMed identifiers are included in the dataset names.
