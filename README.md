@@ -3,7 +3,9 @@ The Geneset Ordinal Association Test (GOAT) is a parameter-free permutation-base
 
 This method has not been published yet but a preprint that describes the method in more detail is available, please cite it when using the early-access version of GOAT;
 
-_Koopmans, F. (2023). The GOAT algorithm for geneset enrichment analysis. BioRxiv preprint: https://www.biorxiv.org/content/TODO/TODO _
+_Koopmans, F. (2023). The GOAT algorithm for geneset enrichment analysis._ BioRxiv preprint will be available soon.
+
+An user-friendly webtool is also available, perform your GOAT analyses online at [https://ftwkoopmans.github.io/goat](https://ftwkoopmans.github.io/goat)
 
 
 ## Installation
@@ -78,7 +80,7 @@ First 3 lines of a table with only pvalue data that is used for GOAT (with `scor
 | 335   |  APOA1  |  0.09  |
 | 9948  |  WDR1   |  1     |
 
-You may add the required `signif` column to indicate all genes with pvalue < 0.01 are considered foreground/significant using this R statement, assuming above genelist data.frame is called 'genelist'; 
+You may add the required `signif` column to indicate all genes with pvalue < 0.01 are considered foreground/significant using this R statement, assuming above genelist data.frame is called 'genelist';
 `genelist$signif = genelist$pvalue < 0.01`
 
 
@@ -86,7 +88,7 @@ You may add the required `signif` column to indicate all genes with pvalue < 0.0
 
 The GOAT R package includes a convenience function to map gene symbols to human Entrez gene IDs; `symbol_to_entrez`
 
-First, you need to download a data table from the www.genenames.org website; 
+First, you need to download a data table from the www.genenames.org website;
 
 - download link: https://www.genenames.org/download/statistics-and-files/
 - table: "Complete dataset download links" -->> "Complete HGNC approved dataset" -->> download the "TXT" table
@@ -108,7 +110,7 @@ file_hgnc = "C:/data/hgnc_complete_set.txt"
 hgnc = hgnc_lookuptable(file_hgnc)
 genelist = symbol_to_entrez(genelist, hgnc)
 # after ID mapping is done, we add a column named 'gene' to the genelist data.frame and populate it with the entrez gene IDs
-genelist$gene = genelist$entrez_id 
+genelist$gene = genelist$entrez_id
 ```
 
 As a next step you will need to remove failed gene mappings (i.e. no Entrez gene id was found) and remove redundant genes (same entrez_id) as shown in the next section.
