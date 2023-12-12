@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
+	<link rel="icon" type="image/png" href="./favicon-16x16.png" />
+	<link rel="manifest" href="./site.webmanifest">
+	<link rel="mask-icon" href="./safari-pinned-tab.svg" color="#5bbad5">
+	<meta name="msapplication-TileColor" content="#da532c">
+	<meta name="theme-color" content="#ffffff">
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	
+		<link href="./_app/immutable/assets/4.bd24536d.css" rel="stylesheet">
+		<link href="./_app/immutable/assets/util.0f494d5b.css" rel="stylesheet">
+		<link rel="modulepreload" href="./_app/immutable/entry/start.0d6fd45e.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/scheduler.7144be00.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.ff628733.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/app.b89ed633.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/index.3da70c46.js">
+		<link rel="modulepreload" href="./_app/immutable/nodes/0.6d373557.js">
+		<link rel="modulepreload" href="./_app/immutable/nodes/4.44638b47.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/stores.b31fe97b.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/util.14f89131.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/stores.bbded9a9.js"><title>Map gene symbols to human gene identifiers</title><!-- HEAD_svelte-1bjj788_START --><meta name="description" content="Map gene symbols in your input table to human gene identifiers (NCBI Entrez and HGNC)"><!-- HEAD_svelte-1bjj788_END -->
+</head>
+
+<body data-sveltekit-preload-data="hover">
+	<div style="display: contents">   <nav><div style="padding: 4px; margin-left: 20px;"><a href="/" data-svelte-h="svelte-1kp1n6l"><img src="./android-chrome-192x192.png" width="40" height="40" alt="GOAT"></a></div> <a href="/" style="margin-left: 5px;" data-svelte-h="svelte-7oxv2g">Home</a> <a href="/goat" style="margin-left: 40px;" data-svelte-h="svelte-10g8z77">GOAT online</a> <a href="/genemap" style="margin-left: 40px;" class="active" data-svelte-h="svelte-13lvetu">gene ID mapping</a> <a href="/docs" style="margin-left: 40px;" data-svelte-h="svelte-1106bxz">Documentation</a></nav> <div class="divH1" data-svelte-h="svelte-15c5tkv"><h1>Gene ID mapping</h1> <div style="margin: 0px 25px 0px 25px; text-align: center;"><h3>With this tool you can map gene symbols in an Excel/CSV/TSV table to Human gene identifiers.
+			<br>
+			The output will contain columns with gene IDs and the respective official gene symbol. It can be
+			directly used as input for the GOAT online tool (it&#39;ll only use rows where mapping was successful).</h3> <img src="beta.png" width="200px" alt="BETA VERSION"></div></div> <div class="pnlResults" style="margin-bottom: 50px;" tabindex="-1" role="button" aria-pressed="false"><div class="divH2" data-svelte-h="svelte-kki37h"><h2>Your input data</h2></div> <table><tbody><tr><td style="vertical-align: top; width: 300px;"><input id="genelistFileDialog" type="file" accept=".csv,.tsv,.xlsx" multiple="false" style="display: none;"> <div id="genelist_dropzone" tabindex="0" role="button" aria-pressed="false"><p><i data-svelte-h="svelte-uobxa9">drag&amp;drop a genelist file or click to open a file dialog</i> <br> <i class="dropicon"></i> </p></div></td> <td data-svelte-h="svelte-i76nm3"><div class="helpSettings">Importantly, your input genelist / gene table must be prepared in a format that is
+						compatible with this tool.
+						<ul><li class="svelte-1b7cd8l">File format: either CSV, TSV or Excel (.xlsx file, data on the first sheet)</li> <li class="svelte-1b7cd8l">Required column: <b>symbol</b> (column name must match exactly)</li></ul>
+						The documentation below shows an example table that one might use as input.</div></td></tr></tbody></table> <div style=""><b data-svelte-h="svelte-jrlymk">status:</b> <br> <div class="alert" data-svelte-h="svelte-1x7jbfu">no genelist loaded yet</div></div></div> <div class="pnlResults" style="margin-bottom: 50px;"><div class="divH2" data-svelte-h="svelte-1etyc0x"><h2>Settings</h2></div> <div style="margin: 10px 0px 10px 0px;" data-svelte-h="svelte-atx6a9">Rows where the gene symbol column contains a delimiter (i.e. semicolon, comma or whitespace) are
+		assumed to refer to multiple genes. If there are more than 2 unique gene symbols (on a row), how
+		should these be mapped to human gene identifiers?</div> <div style="margin: 5px;"><label><input type="radio" name="inputSymbolRetain" value="retainFirst">
+
+			try to map only the first gene symbol</label></div> <div style="margin: 5px;"><label><input type="radio" name="inputSymbolRetain" value="retainFirstSucces" checked>
+
+			use the first gene symbol that can be successfully mapped</label></div> <div style="margin: 5px;"><label><input type="radio" name="inputSymbolRetain" value="retainFirstSuccesNovel">
+
+			analogous to above, but skip if there exist a non-ambiguous row that contains the first
+			(successfully mapped) gene symbol</label></div> <div style="margin: 5px;"><label><input type="radio" name="inputSymbolRetain" value="skipAmbiguous">
+
+			skip rows with ambiguous symbols altogether</label></div> <br> <div><button class="btn btn-action" style="margin-right: 5px;" disabled>START</button>  </div></div> <div class="pnlResults" style="margin-bottom: 100px;"><div class="divH2" data-svelte-h="svelte-1lm4it4"><h2>Results</h2></div> <div style="margin: 10px 0px 10px 0px;"><div data-svelte-h="svelte-fomj7a">No results yet; load your genelist and press START...</div></div></div> <div class="pnlResults" style="margin-bottom: 100px; padding-right: 50px;" data-svelte-h="svelte-1ydgkiu"><div class="divH2"><h2>Settings documentation</h2></div> <p>To illustrate the problem of ambiguous genes/symbols and solutions offered by above options;</p> <table class="tbl-bordered"><thead><tr><th>symbol</th><th>effectsize</th><th class="note svelte-1b7cd8l">note</th></tr></thead> <tbody><tr><td>GRIA1</td><td>1.0</td> <td class="note svelte-1b7cd8l">protein group maps to exactly 1 gene</td></tr> <tr><td>GRIA2</td><td>1.0</td> <td class="note svelte-1b7cd8l">protein group maps to exactly 1 gene</td></tr> <tr><td>GRIA1;GRIA2</td><td>1.5</td> <td class="note svelte-1b7cd8l">ambiguous, one might want to use only the first entry (&#39;leading&#39; gene)</td></tr> <tr><td>GRIA3;GRIA4</td><td>1.5</td> <td class="note svelte-1b7cd8l">ambiguous, but this row contributes a new gene (GRIA3)</td></tr> <tr><td>tr|A8K0K0|A8K0K0_HUMAN;GRIA2;GRIA3</td><td>2.0</td> <td class="note svelte-1b7cd8l">ambiguous, but the first entry has no gene symbol only an accession</td></tr></tbody></table> <div><ol><li class="svelte-1b7cd8l">With option 1, <i>&quot;try to map only the first gene symbol&quot;</i><br>
+				the output will contain a gene ID for all rows except the last (respectively, GRIA1, GRIA2, GRIA1,
+				GRIA3, -).</li> <li class="svelte-1b7cd8l">With option 2, <i>&quot;use the first gene symbol that can be successfully mapped&quot;</i><br>
+				all rows will be mapped to a gene ID (respectively, GRIA1, GRIA2, GRIA1, GRIA3, GRIA2).</li> <li class="svelte-1b7cd8l">With option 3, <i>&quot;analogous to above, but skip if there exist a non-ambiguous row that contains the first
+					(successfully mapped) gene symbol&quot;</i><br>
+				rows 3 and 5 are skipped because there exist unambiguous entries for GRIA1 and GRIA2 (respectively,
+				GRIA1, GRIA2, -, GRIA3, -). This approach favors rows that are unambiguous and supplements this
+				only with ambiguous rows that contribute new information (genes).</li> <li class="svelte-1b7cd8l">With option 4, <i>&quot;skip rows with ambiguous symbols altogether&quot;</i><br>
+				only the first 2 rows are mapped (respectively, GRIA1, GRIA2, -, -, -).</li></ol></div> <p>When chosing the option most appropriate for your dataset, keep in mind that the geneset
+		analysis in GOAT online will retain only 1 row per unique gene. If multiple rows/entries are
+		available for a gene, the one with the lowest/best p-value is retained. If there are no gene
+		p-values in your data/table, the best absolute effectsize is retained (across multiple entries
+		for the same gene).</p></div> <div class="pnlResults" style="margin-bottom: 100px;" data-svelte-h="svelte-1f7z8uw"><div class="divH2"><h2>What data is used / how is gene ID mapping done?</h2></div> <div><p>We created a lookup table using official gene symbols and aliases/synonyms based on
+			information provided by <a href="https://www.genenames.org" target="_blank" rel="nofollow">HGNC</a>, it is stored on this webserver. Any synonyms that are listed by HGNC as entries for
+			multiple genes are considered ambiguous and are discarded.</p> <p>This tool downloads the lookup table (mapping from symbols to gene IDs) to your computer and
+			then proceeds with matching between your input table and HGNC gene information. So your
+			table/data never leaves your computer and remains private at all times.</p></div> </div> 
+			
+			<script>
+				{
+					__sveltekit_w5imfs = {
+						base: new URL(".", location).pathname.slice(0, -1),
+						env: {}
+					};
+
+					const element = document.currentScript.parentElement;
+
+					const data = [null,null];
+
+					Promise.all([
+						import("./_app/immutable/entry/start.0d6fd45e.js"),
+						import("./_app/immutable/entry/app.b89ed633.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element, {
+							node_ids: [0, 4],
+							data,
+							form: null,
+							error: null
+						});
+					});
+				}
+			</script>
+		</div>
+</body>
+
+</html>
