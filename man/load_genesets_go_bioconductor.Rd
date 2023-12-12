@@ -13,9 +13,14 @@ load_genesets_go_bioconductor(include_child_annotations = TRUE)
 table with columns; source (character), source_version (character), id (character), name (character), genes (list), ngenes (int)
 }
 \description{
-note that org.Hs.eg.db pulls data semi-annually from NCBI gene2go,
-the GO database version returned by this function is tied to the version of the org.Hs.eg.db on your computer.
-Note that the actual GO database version is returned in the result column.
+Download and import genesets from the GO database using the Bioconductor infrastructure.
+Use the \code{goat::load_genesets_go_fromfile} function for more fine-grained control over the GO database version that you use; it allows you to import NCBI gene2go files
+}
+\details{
+Note that org.Hs.eg.db pulls data semi-annually from NCBI gene2go,
+but the GO database version returned by this function is tied to the version of the org.Hs.eg.db on your computer (this is controlled by the Bioconductor infrastructure).
+
+The actual GO database version that is retrieved is returned by this function in the \code{source_version} column.
 }
 \examples{
 \dontrun{

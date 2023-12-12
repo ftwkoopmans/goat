@@ -1,11 +1,14 @@
 
-The Geneset Ordinal Association Test (GOAT) is a parameter-free permutation-based algorithm for geneset enrichment analysis of preranked genelists. The algorithm is computationally efficient and completes in the order of seconds. Validations using synthetic data show that estimated geneset p-values are well calibrated under the null hypothesis and invariant to geneset size. Application to various real-world proteomics and gene expression studies demonstrates that GOAT consistently identifies more significant Gene Ontology terms as compared to alternative methods.
+The Geneset Ordinal Association Test (GOAT) is a parameter-free permutation-based algorithm for geneset enrichment analysis of preranked genelists. The full algorithm is computationally efficient and completes in the order of seconds and within 1 second when using precomputed null distributions. Validations using synthetic data show that estimated geneset p-values are well calibrated under the null hypothesis and invariant to geneset size. Application to various real-world proteomics and gene expression studies demonstrates that GOAT consistently identifies more significant Gene Ontology terms as compared to alternative methods.
 
-This method has not been published yet but a preprint that describes the method in more detail is available, please cite it when using the early-access version of GOAT;
+The GOAT algorithm has not been published yet but a preprint is available, please cite it when using the early-access version of GOAT;
 
-_Koopmans, F. (2023). The GOAT algorithm for geneset enrichment analysis._ BioRxiv preprint will be available soon.
+_Koopmans, F. (2023). GOAT: efficient and robust identification of geneset enrichment._ [https://doi.org/10.1101/2023.12.10.570979](https://doi.org/10.1101/2023.12.10.570979).
 
-An user-friendly webtool is also available, perform your GOAT analyses online at [https://ftwkoopmans.github.io/goat](https://ftwkoopmans.github.io/goat)
+
+## Online tool
+
+This GitHub repository contains the source-code for the GOAT R package and shows how to use it. Alternatively, check out the GOAT online tool at [https://ftwkoopmans.github.io/goat](https://ftwkoopmans.github.io/goat)
 
 
 ## Installation
@@ -24,7 +27,13 @@ remotes::install_github("ctlab/fgsea", upgrade = FALSE) # no optional updates
 
 ## Quickstart
 
-In this example, we'll use GOAT to identify enriched GO terms in one of the example proteomics datasets that is bundled with the GOAT R package. Below code assumes you've successfully installed the R package as per instructions above.
+Below example assumes you've successfully installed the R package as per instructions above.
+
+We'll use GOAT to identify enriched GO terms in one of the example proteomics datasets that is bundled with the GOAT R package. Besides the code comments that accompany each step in the example below, you can also check the respective R function documentation for further details (e.g. `?goat::load_genesets_go_bioconductor`). Below code will generate;
+
+- an output table with geneset p-values
+- a logfile that includes M&M text adapted to your settings
+- basic visualizations of significant genesets
 
 ```
 library(goat)
@@ -45,14 +54,17 @@ genesets_filtered = filter_genesets(genesets_asis, genelist, min_overlap = 10, m
 # to use FDR for multiple testing correction instead of the stringent Bonferroni method, set padj_method = "BH"
 result = test_genesets(genesets_filtered, genelist, method = "goat", score_type = "effectsize", padj_method = "bonferroni", padj_cutoff = 0.05)
 
-# print the significant GO term counts, get geneset 'source' (CC/BP/MF), to console
+# print the significant GO term counts, per geneset 'source' (CC/BP/MF), to console
 print(result |> group_by(source) |> summarise(signif_count = sum(signif), .groups="drop"))
 
 # store the results as an Excel table, and create a logfile that documents the GOAT settings you used
-# don't forget to change the output filename to your desired filename, within a prexisting directory on your computer, and use forward slashes in the file path !
+# this also includes M&M text that you can use in your publications.
+#
+# When running this example, change the output filename and path to some prexisting directory on your computer (use forward slashes in the file path)
 save_genesets(result, genelist, filename = "C:/temp/goat.xlsx")
 
-# generate lollipop charts for each GO domain (CC/BP/MF). Again, don't forget to change the output directory to an existing directory on your computer and use forward slashes in the file path
+# generate lollipop charts for each GO domain (CC/BP/MF)
+# When running this example, change the output directory to an existing directory on your computer
 plot_lollipop(result, output_dir = "C:/temp/", topn = 50)
 ```
 
@@ -80,7 +92,7 @@ First 3 lines of a table with only pvalue data that is used for GOAT (with `scor
 | 335   |  APOA1  |  0.09  |
 | 9948  |  WDR1   |  1     |
 
-You may add the required `signif` column to indicate all genes with pvalue < 0.01 are considered foreground/significant using this R statement, assuming above genelist data.frame is called 'genelist';
+You may add the required `signif` column to indicate all genes with pvalue < 0.01 are considered foreground/significant using this R statement, assuming above genelist data.frame is called 'genelist'; 
 `genelist$signif = genelist$pvalue < 0.01`
 
 
@@ -88,7 +100,7 @@ You may add the required `signif` column to indicate all genes with pvalue < 0.0
 
 The GOAT R package includes a convenience function to map gene symbols to human Entrez gene IDs; `symbol_to_entrez`
 
-First, you need to download a data table from the www.genenames.org website;
+First, you need to download a data table from the www.genenames.org website; 
 
 - download link: https://www.genenames.org/download/statistics-and-files/
 - table: "Complete dataset download links" -->> "Complete HGNC approved dataset" -->> download the "TXT" table
@@ -110,7 +122,7 @@ file_hgnc = "C:/data/hgnc_complete_set.txt"
 hgnc = hgnc_lookuptable(file_hgnc)
 genelist = symbol_to_entrez(genelist, hgnc)
 # after ID mapping is done, we add a column named 'gene' to the genelist data.frame and populate it with the entrez gene IDs
-genelist$gene = genelist$entrez_id
+genelist$gene = genelist$entrez_id 
 ```
 
 As a next step you will need to remove failed gene mappings (i.e. no Entrez gene id was found) and remove redundant genes (same entrez_id) as shown in the next section.

@@ -182,7 +182,7 @@ myplot = function(x, min_datapoints = 25) {
 if(!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
 
 save(tib_plot_all, file = paste0(output_dir, "/bootstrap_genesets.rda"), compress = TRUE)
-# load("C:/VU/projects/Frank - GOAT (2022)/manuscript/figures_v2_precomputed-500k/bootstrap_genesets.rda")
+# load("C:/VU/projects/Frank - GOAT (2022)/manuscript/figures_v2_precomputed-500k_rerun-after-R-package-refactorings/bootstrap_genesets.rda")
 
 # Figure 2: GOAT pvalue, GOAT effectsize, GSEA 1kiter pvalue, GSEA 1kiter effectsize, GSEA 50kiter pvalue, GSEA 50kiter effectsize
 plot_names = c("GOAT p-value", "GOAT effectsize", "GSEA p-value\nniter=1000", "GSEA effectsize\nniter=1000", "GSEA p-value\nniter=50000", "GSEA effectsize\nniter=50000")
@@ -205,5 +205,13 @@ p = myplot(tib_plot_all |> filter(method_name == "GOAT p-value")) +
   facet_wrap(method_label ~ genelist_size_label, nrow = 1)
 svglite::svglite(filename = "C:/temp/null_simulations.svg", width = 8, height = 3)
 print(p)
+
+# Figure with only GOAT p-value and effectsize
+p = myplot(tib_plot_all |> filter(method_name == "GOAT p-value" | method_name == "GOAT effectsize")) +
+  facet_wrap(method_label ~ genelist_size_label, nrow = 2)
+print(p)
+ggsave(p, file = paste0(output_dir, "/bootstrap_geneset_bins__GOAT-main-figure.pdf"), width = 5, height = 3.5)
+
+
 dev.off()
 

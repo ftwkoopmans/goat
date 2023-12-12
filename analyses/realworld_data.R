@@ -17,7 +17,8 @@ data("goat_example_datasets")
 # dataset_names_go_analysis = names(goat_example_datasets)
 dataset_names_go_analysis = grep("26931375", names(goat_example_datasets), ignore.case = T, value = T, invert = T)
 
-genesets_syngo = load_genesets_syngo("C:/DATA/SynGO_bulk_download_release_20210225/syngo_ontologies.xlsx", gene_database = "entrez")
+genesets_syngo = load_genesets_syngo("C:/DATA/SynGO_bulk_download_release_20231201/syngo_ontologies.xlsx", gene_database = "entrez")
+# genesets_syngo = load_genesets_syngo("C:/DATA/SynGO_bulk_download_release_20210225/syngo_ontologies.xlsx", gene_database = "entrez")
 genesets = load_genesets_go_fromfile(
   file_gene2go = "C:/VU/projects/Frank - GOAT (2022)/genesets/gene2go_2023-11-01.gz",
   file_goobo = "C:/VU/projects/Frank - GOAT (2022)/genesets/go_2023-11-01.obo"
@@ -196,9 +197,9 @@ result_ora |> group_by(source) |> summarise(signif_count = sum(signif), .groups=
 result_gsea |> group_by(source) |> summarise(signif_count = sum(signif), .groups="drop")
 result_goat |> group_by(source) |> summarise(signif_count = sum(signif), .groups="drop")
 # print CC terms; GOAT finds synapse-specific terms
-result_ora  |> filter(signif & source == "GO_CC")
-result_gsea |> filter(signif & source == "GO_CC")
-result_goat |> filter(signif & source == "GO_CC")
+result_ora  |> filter(signif & source == "GO_CC" & grepl("synap", name)) |> select(-source_version)
+result_gsea |> filter(signif & source == "GO_CC" & grepl("synap", name)) |> select(-source_version)
+result_goat |> filter(signif & source == "GO_CC" & grepl("synap", name)) |> select(-source_version)
 
 results_klaassen = bind_rows(
   results_klaassen,
@@ -222,6 +223,8 @@ result_goat |> group_by(source) |> summarise(signif_count = sum(signif), .groups
 result_ora  |> filter(signif & source == "SYNGO_CC") |> select(-source_version)
 result_gsea |> filter(signif & source == "SYNGO_CC") |> select(-source_version)
 result_goat |> filter(signif & source == "SYNGO_CC") |> select(-source_version)
+result_ora |> filter(signif & source != "SYNGO_CC") |> select(-source_version)
+result_gsea |> filter(signif & source != "SYNGO_CC") |> select(-source_version)
 result_goat |> filter(signif & source != "SYNGO_CC") |> select(-source_version)
 
 results_klaassen = bind_rows(
