@@ -15,19 +15,19 @@
 	
 		<link href="./_app/immutable/assets/4.bd24536d.css" rel="stylesheet">
 		<link href="./_app/immutable/assets/app.0f494d5b.css" rel="stylesheet">
-		<link rel="modulepreload" href="./_app/immutable/entry/start.136301d3.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/scheduler.a30ae394.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.ed106ba1.js">
-		<link rel="modulepreload" href="./_app/immutable/entry/app.242b7cfa.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/index.49b3fccf.js">
-		<link rel="modulepreload" href="./_app/immutable/nodes/0.9f3eb7bd.js">
-		<link rel="modulepreload" href="./_app/immutable/nodes/4.499842c0.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/stores.07161f2a.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/stores.7fc2773d.js"><title>Map gene symbols to human gene identifiers</title><!-- HEAD_svelte-1bjj788_START --><meta name="description" content="Map gene symbols in your input table to human gene identifiers (NCBI Entrez and HGNC)"><!-- HEAD_svelte-1bjj788_END -->
+		<link rel="modulepreload" href="./_app/immutable/entry/start.104ef721.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/scheduler.cd38125d.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.2c14ebbb.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/app.9ed189a3.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/index.a6a2bf8f.js">
+		<link rel="modulepreload" href="./_app/immutable/nodes/0.1790fe3c.js">
+		<link rel="modulepreload" href="./_app/immutable/nodes/4.ff2659f7.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/stores.2afc0415.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/stores.76a4b977.js"><title>Map gene symbols to human gene identifiers</title><!-- HEAD_svelte-1bjj788_START --><meta name="description" content="Map gene symbols in your input table to human gene identifiers (NCBI Entrez and HGNC)"><!-- HEAD_svelte-1bjj788_END -->
 </head>
 
 <body data-sveltekit-preload-data="hover">
-	<div style="display: contents">   <nav><div style="padding: 4px; margin-left: 20px;"><a href="/" data-svelte-h="svelte-4q4kjo"><img src="/android-chrome-192x192.png" width="40" height="40" alt="GOAT"></a></div> <a href="/" style="margin-left: 5px;" data-svelte-h="svelte-xsa54j">Home</a> <a href="/goat" style="margin-left: 40px;" data-svelte-h="svelte-o349n8">GOAT online</a> <a href="/genemap" style="margin-left: 40px;" class="active" data-svelte-h="svelte-sn5cge">gene ID mapping</a> <a href="/docs" style="margin-left: 40px;" data-svelte-h="svelte-1dikf5g">Documentation</a></nav> <div class="divH1" data-svelte-h="svelte-15c5tkv"><h1>Gene ID mapping</h1> <div style="margin: 0px 25px 0px 25px; text-align: center;"><h3>With this tool you can map gene symbols in an Excel/CSV/TSV table to Human gene identifiers.
+	<div style="display: contents">   <nav><div style="padding: 4px; margin-left: 20px;"><a href="/" class="active"><img src="/android-chrome-192x192.png" width="40" height="40" alt="GOAT"></a></div> <a href="/" style="margin-left: 5px;">Home</a> <a href="/goat" style="margin-left: 40px;">GOAT online</a> <a href="/genemap" style="margin-left: 40px;">gene ID mapping</a> <a href="/docs" style="margin-left: 40px;">Documentation</a></nav> <div class="divH1" data-svelte-h="svelte-15c5tkv"><h1>Gene ID mapping</h1> <div style="margin: 0px 25px 0px 25px; text-align: center;"><h3>With this tool you can map gene symbols in an Excel/CSV/TSV table to Human gene identifiers.
 			<br>
 			The output will contain columns with gene IDs and the respective official gene symbol. It can be
 			directly used as input for the GOAT online tool (it&#39;ll only use rows where mapping was successful).</h3> <img src="beta.png" width="200px" alt="BETA VERSION"></div></div> <div class="pnlResults" style="margin-bottom: 50px;" tabindex="-1" role="button" aria-pressed="false"><div class="divH2" data-svelte-h="svelte-kki37h"><h2>Your input data</h2></div> <table><tbody><tr><td style="vertical-align: top; width: 300px;"><input id="genelistFileDialog" type="file" accept=".csv,.tsv,.xlsx" multiple="false" style="display: none;"> <div id="genelist_dropzone" tabindex="0" role="button" aria-pressed="false"><p><i data-svelte-h="svelte-uobxa9">drag&amp;drop a genelist file or click to open a file dialog</i> <br> <i class="dropicon"></i> </p></div></td> <td data-svelte-h="svelte-i76nm3"><div class="helpSettings">Importantly, your input genelist / gene table must be prepared in a format that is
@@ -64,7 +64,7 @@
 			
 			<script>
 				{
-					__sveltekit_snvp3l = {
+					__sveltekit_ix6i7r = {
 						base: new URL(".", location).pathname.slice(0, -1),
 						env: {}
 					};
@@ -74,8 +74,8 @@
 					const data = [null,null];
 
 					Promise.all([
-						import("./_app/immutable/entry/start.136301d3.js"),
-						import("./_app/immutable/entry/app.242b7cfa.js")
+						import("./_app/immutable/entry/start.104ef721.js"),
+						import("./_app/immutable/entry/app.9ed189a3.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element, {
 							node_ids: [0, 4],
