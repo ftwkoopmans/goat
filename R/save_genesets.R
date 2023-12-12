@@ -182,7 +182,7 @@ methods_text = function(x, genelist, settings) {
   # cite R package
   result = paste0(
     'Geneset analyses\n',
-    'The GOAT [PMID:xxx] R package (version ', goat_version(),
+    'The GOAT [doi:10.1101/2023.12.10.570979] R package (version ', goat_version(),
     ' , https://github.com/ftwkoopmans/goat ) was used to perform geneset enrichment analyses',
     # algorithm / method
     ' with the ', toupper(method), ' algorithm'
