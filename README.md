@@ -18,10 +18,10 @@ The GOAT algoritm is implemented as an R package. Assuming R (at least version 4
 ```
 # Unfortunately, the Bioconductor git repo is currently broken so we cannot provide a single-command installation. Please execute the following lines of code to install GOAT and its required packages;
 install.packages(c("BiocManager", "remotes", "pheatmap", "ggplot2"))
-BiocManager::install(c("AnnotationDbi", "GO.db", "org.Hs.eg.db"), update = FALSE) # no optional updates
-remotes::install_github("ftwkoopmans/goat", upgrade = FALSE) # no optional updates
+BiocManager::install(c("AnnotationDbi", "GO.db", "org.Hs.eg.db"))
+remotes::install_github("ftwkoopmans/goat")
 # optionally, only if you want to make use of fGSEA
-remotes::install_github("ctlab/fgsea", upgrade = FALSE) # no optional updates
+remotes::install_github("ctlab/fgsea")
 ```
 
 
