@@ -14,18 +14,18 @@ URL: https://github.com/ftwkoopmans/goat
 License: Apache License (>= 2)
 Depends: 
     R (>= 4.1.0),
-    dplyr
+    dplyr (>= 1.0.3)
 Imports:
-    tibble,
-    tidyselect,
-    tidyr,
-    data.table,
-    Matrix,
-    readxl,
-    writexl,
+    tibble (>= 3.0.0),
+    tidyselect (>= 1.2.0),
+    tidyr (>= 1.1.2),
+    data.table (>= 1.14.0),
+    Matrix (>= 1.4-0),
+    readxl (>= 1.4.1),
+    writexl (>= 1.4.1),
     Rcpp (>= 1.0.9),
-    vctrs,
-    MonoPoly
+    vctrs (>= 0.3.8),
+    MonoPoly (>= 0.3-10)
 Suggests:
     pheatmap,
     igraph,
