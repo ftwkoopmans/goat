@@ -15,20 +15,20 @@
 	
 		<link href="./_app/immutable/assets/5.6210c133.css" rel="stylesheet">
 		<link href="./_app/immutable/assets/util.0f494d5b.css" rel="stylesheet">
-		<link rel="modulepreload" href="./_app/immutable/entry/start.f8d198e4.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/start.03d8dbb6.js">
 		<link rel="modulepreload" href="./_app/immutable/chunks/scheduler.7144be00.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.283183a0.js">
-		<link rel="modulepreload" href="./_app/immutable/entry/app.72214e40.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.8a086be2.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/app.31bbdee4.js">
 		<link rel="modulepreload" href="./_app/immutable/chunks/index.3da70c46.js">
 		<link rel="modulepreload" href="./_app/immutable/nodes/0.6d373557.js">
-		<link rel="modulepreload" href="./_app/immutable/nodes/5.bcf47352.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/stores.1cd5c321.js">
+		<link rel="modulepreload" href="./_app/immutable/nodes/5.626098cf.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/stores.48c2654a.js">
 		<link rel="modulepreload" href="./_app/immutable/chunks/util.14f89131.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/stores.2c9dbca9.js"><title>GOAT: Geneset Ordinal Association Test - online geneset enrichment analyses</title><!-- HEAD_svelte-1hc78a4_START --><meta name="description" content="Geneset enrichment analysis for Geneset Ontology (GO) or KEGG pathways using the GOAT algorithm webtool. Online data analysis for your preranked genelist from e.g. proteomics or bulk/scRNAseq gene expression studies"><!-- HEAD_svelte-1hc78a4_END -->
+		<link rel="modulepreload" href="./_app/immutable/chunks/stores.79d9616a.js"><title>GOAT: Geneset Ordinal Association Test - online geneset enrichment analyses</title><!-- HEAD_svelte-1hc78a4_START --><meta name="description" content="Geneset enrichment analysis for Geneset Ontology (GO) or KEGG pathways using the GOAT algorithm webtool. Online data analysis for your preranked genelist from e.g. proteomics or bulk/scRNAseq gene expression studies"><!-- HEAD_svelte-1hc78a4_END -->
 </head>
 
 <body data-sveltekit-preload-data="hover">
-	<div style="display: contents">   <nav><div style="padding: 4px; margin-left: 20px;"><a href="/" data-svelte-h="svelte-1kp1n6l"><img src="./android-chrome-192x192.png" width="40" height="40" alt="GOAT"></a></div> <a href="/" style="margin-left: 5px;" data-svelte-h="svelte-7oxv2g">Home</a> <a href="/goat" style="margin-left: 40px;" class="active" data-svelte-h="svelte-10g8z77">GOAT online</a> <a href="/genemap" style="margin-left: 40px;" data-svelte-h="svelte-13lvetu">gene ID mapping</a> <a href="/docs" style="margin-left: 40px;" data-svelte-h="svelte-1106bxz">Documentation</a></nav> <div tabindex="-1" role="button" aria-pressed="false"><div class="divH1" data-svelte-h="svelte-j0dsam"><h1>Online geneset enrichment analysis tool for the GOAT algorithm</h1> <div style="margin: 0px 150px 0px 150px; text-align: center;"><h3>Identify enriched genesets using GOAT and inspect your results using interactive tables and
+	<div style="display: contents">   <nav><div style="padding: 4px; margin-left: 20px;"><a href="/" data-svelte-h="svelte-16w8u87"><img src="./android-chrome-192x192.png" width="40" height="40" alt="GOAT"></a></div> <a href="/" style="margin-left: 5px;" data-svelte-h="svelte-1ec66ou">Home</a> <a href="/goat.html" style="margin-left: 40px;" data-svelte-h="svelte-2trhjx">GOAT online</a> <a href="/genemap.html" style="margin-left: 40px;" data-svelte-h="svelte-1cgo0ae">gene ID mapping</a> <a href="/docs.html" style="margin-left: 40px;" data-svelte-h="svelte-amifqa">Documentation</a></nav> <div tabindex="-1" role="button" aria-pressed="false"><div class="divH1" data-svelte-h="svelte-j0dsam"><h1>Online geneset enrichment analysis tool for the GOAT algorithm</h1> <div style="margin: 0px 150px 0px 150px; text-align: center;"><h3>Identify enriched genesets using GOAT and inspect your results using interactive tables and
 				data visualizations.</h3> <img src="beta.png" width="200px" alt="BETA VERSION"></div></div> <div class="containerSettings"><div class="divH2" data-svelte-h="svelte-7havjb"><h2>Genelist</h2></div> <div class="divH3" data-svelte-h="svelte-31gbox"><h3>Load your input data; a table of genes and their p-values/effectsizes.</h3></div> <div class="pnlSettings"><table><tbody><tr><td style="vertical-align: top; width: 300px;"><input id="genelistFileDialog" type="file" accept=".csv,.tsv,.xlsx" multiple="false" style="display: none;"> <div id="genelist_dropzone" tabindex="0" role="button" aria-pressed="false"><p><i data-svelte-h="svelte-uobxa9">drag&amp;drop a genelist file or click to open a file dialog</i> <br> <i class="dropicon"></i> </p></div> <div style=""><br> <br> <b data-svelte-h="svelte-jrlymk">status:</b> <br> <div class="alert" data-svelte-h="svelte-1x7jbfu">no genelist loaded yet</div></div></td> <td><div class="helpSettings">Importantly, your input genelist / gene table must be prepared in a format that is
 								compatible with this tool. In brief,
 								<ul data-svelte-h="svelte-9uig0e"><li>File format: either CSV, TSV or Excel (.xlsx file, data on the first sheet)</li> <li>Required columns (column names must match exactly)</li> <ol><li><b>gene</b>: Human Entrez (NCBI) gene IDs</li> <li><b>symbol</b>: gene symbol</li> <li><b>effectsize</b>: effectsize or log2 foldchange</li> <li><b>pvalue</b>: gene p-value (preferably un-adjusted)</li> <li><b>signif</b>: was the adjusted p-value significant?
@@ -51,7 +51,7 @@
 			
 			<script>
 				{
-					__sveltekit_1kii308 = {
+					__sveltekit_xhf6n = {
 						base: new URL(".", location).pathname.slice(0, -1),
 						env: {}
 					};
@@ -61,8 +61,8 @@
 					const data = [null,null];
 
 					Promise.all([
-						import("./_app/immutable/entry/start.f8d198e4.js"),
-						import("./_app/immutable/entry/app.72214e40.js")
+						import("./_app/immutable/entry/start.03d8dbb6.js"),
+						import("./_app/immutable/entry/app.31bbdee4.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element, {
 							node_ids: [0, 5],
