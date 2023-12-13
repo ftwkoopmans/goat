@@ -11,9 +11,59 @@ _Koopmans, F. (2023). GOAT: efficient and robust identification of geneset enric
 This GitHub repository contains the source-code for the GOAT R package and shows how to use it. Alternatively, check out the GOAT online tool at [https://ftwkoopmans.github.io/goat](https://ftwkoopmans.github.io/goat)
 
 
-## Installation
+## Installing the R package
 
-The GOAT algoritm is implemented as an R package. Assuming R (at least version 4.1), RTools and RStudio are installed on your computer, execute the following R commands in a new RStudio session (i.e. close RStudio if currently opened, then start RStudio anew) to install GOAT;
+### Before installing
+
+#### Windows
+
+- Install R version 4.1.0 (or higher) 
+- Install RTools, available from https://cran.r-project.org/bin/windows/Rtools/
+  - the RTools version you download/install from this link should match your current R version
+  - if you don't know your currently installed R version (e.g. you already have R and RStudio but not RTools); start RStudio and check the version reported in the Console (bottom-left of the screen)
+- Reboot your computer
+- Install RStudio 
+
+#### MacOS
+
+- For Apple computers, we suggest installing R from https://mac.r-project.org
+  - if your current R version is below 4.3, you might have to upgrade by following these instructions to install R (installation process hasn't been tested with R 4.1 or 4.2 yet on MacOS)
+  - download the installer for the current version listed under "R-4.X-branch"
+    - note the difference between ARM (M1/M2/M3) and Intel-based
+  - don't use the devel/unstable
+- Install the 2 Mandatory tools described in https://mac.r-project.org/tools/   (Xcode and Fortran compiler)
+  - following the official instructions linked here, the versions of R and these tools will be compatible and you should be able to install R packages from source
+- Install RStudio 
+- Start RStudio and install the rstudioapi package before proceeding with GOAT R package installation; `install.packages("rstudioapi")`
+
+potential issues;
+
+- `Directory of lock file does not exist: /Users/<username>/Library/Caches/org.R-project.R/R/pkgcache/pkg` during installation suggests you lack write permission to (some part of) this path. Solution; check that this path exists (create if missing) and give your current OS user write permission (at least to the last 4 directories in this path)
+- `ld: library not found for -lgfortran` if this is among your error messages, the Fortran compiler is not installed (see second step in MacOS install instructions to resolve this) 
+- `Failed to build source package <name>` --> either Xcode/Fortran is not installed (step 2 in above instructions), or their version doesn't line up with your current R version
+
+#### Linux
+
+R version 4.1.0 (or higher) and toolchains for compilation are required. Suggested installation steps that include all system dependencies that we identified, for all (recursive) R packages that GOAT depends upon;
+
+- Fedora; https://cran.r-project.org/bin/linux/fedora
+  - `sudo dnf install R libcurl-devel libssl-devel libxml2-devel gmp-devel glpk-devel`
+- Ubuntu; https://cran.r-project.org/bin/linux/ubuntu/fullREADME.html
+  - add R package repository to your /etc/apt/sources.list file (per instructions in above link)
+  - `sudo apt-get update`
+  - `sudo apt-get install r-base r-base-dev libcurl4-openssl-dev openssl-dev libxml2-dev libgmp-dev libglpk-dev libfontconfig1-dev libfreetype6-dev libgmp3-dev`
+    - note the addition of `r-base-dev` 
+- (optional) install RStudio and then `install.packages("rstudioapi")`
+- (if prompted, install packages into a personal library)
+
+if some of the above dependencies in Fedora/Ubuntu are missing, you may encounter issues such as;
+
+- `eval: make: not found` --> toolchain for compilation is missing, execute the above installation steps
+- `Failed to build source package <name>` --> scroll up a bit to find the suggested solution. e.g. `Missing 2 system packages. You'll probably need to install them manually:` (followed by missing packaged that need to be installed via dnf/apt)
+
+### GOAT R package
+
+Execute the following R commands in a new RStudio session (i.e. close RStudio if currently opened, then start RStudio anew) to install GOAT;
 
 ```
 install.packages("pak") # first, install the package manager that we'll use to install GOAT in the next step
@@ -22,6 +72,10 @@ pak::pkg_install("ftwkoopmans/goat", upgrade = FALSE) # latter parameter makes u
 # optionally, only if you want to make use of fGSEA via the GOAT R package
 pak::pkg_install("ctlab/fgsea", upgrade = FALSE)
 ```
+
+potential issues;
+
+- if `pak::pkg_install("ftwkoopmans/goat", upgrade = FALSE)` yields error like `! Failed to build source package goat` then (most likely) the toolchain for compilation is missing. Follow above instructions for Windows/MacOS/Linux
 
 
 ## Quickstart
@@ -36,10 +90,15 @@ We'll use GOAT to identify enriched GO terms in one of the example proteomics da
 
 ```
 library(goat)
+
+# optionally, set the working directory (where output files from this example will be stored)
+# note that this path will be printed to console later on in the example so you can always find your results
+# setwd("C:/DATA") # e.g. on Windows, this is how one would set the working directory to C:/DATA
+
 # download GO genesets  (only downloads once, caches data on your computer)
 genesets_asis = load_genesets_go_bioconductor()
-# example genelist, one of the datasets already bundled with the R package
-# later examples will show how prepare your own data table / genelist
+# example genelist: one of the datasets already bundled with the R package.
+# later examples will show how prepare your own data table / genelist.
 data("goat_example_datasets")
 genelist = goat_example_datasets$`Hondius 2021:mass-spec:PMID33492460`
 
@@ -58,13 +117,12 @@ print(result |> group_by(source) |> summarise(signif_count = sum(signif), .group
 
 # store the results as an Excel table, and create a logfile that documents the GOAT settings you used
 # this also includes M&M text that you can use in your publications.
-#
-# When running this example, change the output filename and path to some prexisting directory on your computer (use forward slashes in the file path)
-save_genesets(result, genelist, filename = "C:/temp/goat.xlsx")
+save_genesets(result, genelist, filename = "goat.xlsx")
 
 # generate lollipop charts for each GO domain (CC/BP/MF)
-# When running this example, change the output directory to an existing directory on your computer
-plot_lollipop(result, output_dir = "C:/temp/", topn = 50)
+plot_lollipop(result, output_dir = getwd(), topn = 50)
+
+cat("output files are available at;", getwd(), "\n")
 ```
 
 
@@ -102,7 +160,7 @@ The GOAT R package includes a convenience function to map gene symbols to human 
 First, you need to download a data table from the www.genenames.org website; 
 
 - download link: https://www.genenames.org/download/statistics-and-files/
-- table: "Complete dataset download links" -->> "Complete HGNC approved dataset" -->> download the "TXT" table
+- table: "Complete dataset download links" --> "Complete HGNC approved dataset" --> download the "TXT" table
 - filename is typically something like hgnc_complete_set.txt
 
 Next, you prepare a data.frame in R that holds your gene symbols and their respective pvalues and effectsizes, which might look like this;
@@ -116,7 +174,7 @@ Next, you prepare a data.frame in R that holds your gene symbols and their respe
 The following R code will map these genes to entrez and report the success/fail rate to console;
 
 ```
-# update this file path to where you stored the HGNC data table
+# TODO: update this file path to where you stored the HGNC data table (download link in above instructions)
 file_hgnc = "C:/data/hgnc_complete_set.txt"
 hgnc = hgnc_lookuptable(file_hgnc)
 genelist = symbol_to_entrez(genelist, hgnc)
@@ -156,7 +214,7 @@ Alternatively, several functions exist to import genesets from other sources. Fo
 
 ## Geneset simplification
 
-We have implemented a basic geneset\*geneset similary measure that can be used to cluster genesets, allowing you to quickly identify redundant results (groups of genesets that have strong overlap).
+We have implemented a basic geneset\*geneset similarity measure that can be used to cluster genesets, allowing you to quickly identify redundant results (groups of genesets that have strong overlap).
 
 Assuming you ran the quickstart example above, the following code will generate heatmap figures that may aid the interpretation of your GOAT results in case a large number of significant genesets were identified;
 
@@ -171,7 +229,9 @@ print(result |> filter(signif) |> count(source))
 print(result |> filter(signif_and_reduced) |> count(source))
 
 # generate heatmaps for each GO domain (CC/BP/MF). Again, don't forget to change the output directory to an existing directory on your computer and use forward slashes in the file path
-plot_heatmap(clusters, "C:/temp/")
+plot_heatmap(clusters, output_dir = getwd())
 # repeat the lollipop plots made before, but now only for geneset that remain after simplification. See the function documentation for tweaking the plot, e.g. plotting only a subset of genesets/results
-plot_lollipop(result, "C:/temp/", only_reduced = TRUE)
+plot_lollipop(result, output_dir = getwd(), only_reduced = TRUE)
+
+cat("output files are available at;", getwd(), "\n")
 ```
