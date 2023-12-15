@@ -122,7 +122,7 @@ save_genesets(result, genelist, filename = "goat.xlsx")
 # generate lollipop charts for each GO domain (CC/BP/MF)
 plot_lollipop(result, output_dir = getwd(), topn = 50)
 
-cat("output files are available at;", getwd(), "\n")
+cat("output files are available at:", getwd(), "\n")
 ```
 
 
@@ -233,5 +233,5 @@ plot_heatmap(clusters, output_dir = getwd())
 # repeat the lollipop plots made before, but now only for geneset that remain after simplification. See the function documentation for tweaking the plot, e.g. plotting only a subset of genesets/results
 plot_lollipop(result, output_dir = getwd(), only_reduced = TRUE)
 
-cat("output files are available at;", getwd(), "\n")
+cat("output files are available at:", getwd(), "\n")
 ```

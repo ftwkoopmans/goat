@@ -146,7 +146,7 @@ goat_testgene_score_matrix = function(genelist, score_type) {
   genelist_scores = NULL
 
   # effectsize_up
-  if(score_type %in% c("effectsize", "effectsize_up")) {
+  if(any(score_type %in% c("effectsize", "effectsize_up"))) {
     if(has_pvalue) {
       x = rankscore(genelist, genelist$effectsize, -1 * genelist$pvalue, genelist$gene, colname = "score")
     } else {
@@ -156,7 +156,7 @@ goat_testgene_score_matrix = function(genelist, score_type) {
   }
 
   # effectsize_down; analogous to above, but with -1 * effectsize to rank "lower is better"
-  if(score_type %in% c("effectsize", "effectsize_down")) {
+  if(any(score_type %in% c("effectsize", "effectsize_down"))) {
     if(has_pvalue) {
       x = rankscore(genelist, -1 * genelist$effectsize, -1 * genelist$pvalue, genelist$gene, colname = "score")
     } else {
@@ -166,7 +166,7 @@ goat_testgene_score_matrix = function(genelist, score_type) {
   }
 
   # effectsize_abs; analogous, but with absolute effectsize
-  if(score_type %in% c("effectsize_abs")) {
+  if(any(score_type %in% c("effectsize_abs"))) {
     if(has_pvalue) {
       x = rankscore(genelist, abs(genelist$effectsize), -1 * genelist$pvalue, genelist$gene, colname = "score")
     } else {
@@ -176,7 +176,7 @@ goat_testgene_score_matrix = function(genelist, score_type) {
   }
 
   # pvalue
-  if(score_type %in% c("pvalue")) {
+  if(any(score_type %in% c("pvalue"))) {
     if(has_effectsize) {
       x = rankscore(genelist, -1 * genelist$pvalue, abs(genelist$effectsize), genelist$gene, colname = "score")
     } else {
@@ -278,6 +278,7 @@ validate_goat_genelist = function(x, score_type) {
               length(x) > 0 && is.data.frame(x) && "gene" %in% colnames(x) )
   stopifnot("genelist parameter must be a table of at least 100 genes" = nrow(x) >= 100)
   stopifnot("genelist parameter must be a table of at most 50000 genes" = nrow(x) <= 50000)
+  stopifnot("score_type parameter must be a single string" = length(score_type) == 1 && is.character(score_type))
   # depending on score_type, check for valid data in pvalue and effectsize columns
   stopifnot("genelist parameter must have finite non-negative numeric values in the 'pvalue' column when using score_type='pvalue'" =
               (score_type != "pvalue") || ("pvalue" %in% colnames(x) && all(is.numeric(x$pvalue) & is.finite(x$pvalue) & x$pvalue >= 0)) )

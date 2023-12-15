@@ -9,6 +9,7 @@ test_genesets(
   genelist,
   method,
   padj_method = "BH",
+  padj_sources = TRUE,
   padj_cutoff = 0.01,
   padj_min_signifgenes = 0L,
   ...
@@ -21,7 +22,9 @@ test_genesets(
 
 \item{method}{method for overrepresentation analysis. Options: "goat", "hypergeometric", "fisherexact", "fisherexact_ease", "gsea"}
 
-\item{padj_method}{method for p-value adjustment, passed to \code{stats::p.adjust()} via \code{padjust_genesets()}, e.g. set "BH" to compute FDR adjusted p-values (default) or "bonferroni" for a more stringent procedure}
+\item{padj_method}{first step of multiple testing correction; method for p-value adjustment, passed to \code{stats::p.adjust()} via \code{padjust_genesets()}, e.g. set "BH" to compute FDR adjusted p-values (default) or "bonferroni" for a more stringent procedure}
+
+\item{padj_sources}{second step of multiple testing correction; apply Bonferroni adjustment to all p-values according to the number of geneset sources that were tested. Boolean parameter, set TRUE to enable (default) or FALSE to disable}
 
 \item{padj_cutoff}{cutoff for adjusted p-value, \code{signif} column is set to TRUE for all values lesser-equals}
 
@@ -34,8 +37,13 @@ So this does not affect the accuracy of estimated p-values, in contrast to prefi
 the input \code{genesets}, with results stored in columns 'pvalue', 'pvalue_adjust' and 'signif'
 }
 \description{
+Perform geneset enrichment testing using any supported method
+}
+\details{
 After application of the enrichment testing algorithm (e.g. GOAT, ORA or GSEA), multiple testing correction is applied to obtain adjusted p-values using \code{padjust_genesets}.
-This function applies the specified pvalue adjustment procedure within each 'source' in the genesets table and finally corrects p-values for the number of different geneset sources/databases tested.
+That function will first apply the specified pvalue adjustment procedure in the \code{padj_method} parameter within each 'source' in the genesets table. Second, it applies Bonferroni adjustment to all p-values according to the number of different geneset sources that were tested (or set \code{padj_sources = FALSE} to disable).
+
 For example, if the input is a genesets table that contains GO_CC, GO_BP and GO_MF genesets, first multiple testing correction is applied within each source (e.g. using FDR if so desired) and afterwards a Bonferroni correction is applied based on 3 repeated analyses.
-Note that this is more rigorous than typical GO tools (hypothetically, one could split all GO_CC pathways into 1000 different databases/'sources' and then run enrichment testing. Consequently, the multiple testing burden is reduced if one doesn't adjust p-values for the number of 'sources' as we do here).
+
+Note that this is more rigorous than typical GO tools; hypothetically, one could split all GO_CC pathways into 1000 different databases/'sources' and then run enrichment testing. Consequently, the multiple testing burden is reduced if one doesn't adjust p-values for the number of 'sources' as we do here.
 }

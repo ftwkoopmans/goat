@@ -79,23 +79,29 @@ minlog10_fixzero = function(x, limit = 2.22e-16) {
 #'
 #' @param genesets tibble with genesets, must contain column 'pvalue'
 #' @param method method for multiple testing correction, must be any of `stats::p.adjust.methods`, e.g. "BH" or "bonferroni"
-#' @param cutoff cutoff for adjusted p-value, `signif` column is set to TRUE for all values lesser-equals
+#' @param cutoff numeric cutoff value for adjusted p-value, `signif` column is set to TRUE for all values lesser-equals
+#' @param correct_sources apply Bonferroni adjustment to all p-values according to the number of geneset sources that were tested. Boolean parameter, set TRUE to enable (default) or FALSE to disable
 #' @export
-padjust_genesets = function(genesets, method = "BH", cutoff = 0.01) {
-  pvalue = pvalue_adjust= NULL # fix invisible bindings R package NOTE
+padjust_genesets = function(genesets, method = "BH", cutoff = 0.01, correct_sources = TRUE) {
+  pvalue = pvalue_adjust = NULL # fix invisible bindings R package NOTE
   stopifnot(length(genesets) > 0 && is.data.frame(genesets) && all(c("source", "pvalue") %in% colnames(genesets)))
   stopifnot(length(method) == 1 && method %in% stats::p.adjust.methods)
   stopifnot(length(cutoff) == 1 && is.finite(cutoff))
+  stopifnot(length(correct_sources) == 1 && correct_sources %in% c(TRUE, FALSE))
 
-  N = n_distinct(genesets$source)
+  genesets = genesets |>
+    group_by(source) |> # new group_by() will override preexisting groups (as here intended)
+    mutate(pvalue_adjust = stats::p.adjust(pvalue, method = method)) |>
+    ungroup()
+
+  # correction for the number of sources that were evaluated
+  if(correct_sources) {
+    N = n_distinct(genesets$source)
+    genesets = genesets |> mutate(pvalue_adjust = pvalue_adjust * N)
+  }
 
   genesets |>
-    # new group_by() will override preexisting groups (as here intended)
-    group_by(source) |>
-    mutate(pvalue_adjust = stats::p.adjust(pvalue, method = method)) |>
-    ungroup() |>
     mutate(
-      pvalue_adjust = pvalue_adjust * N, # correction for the number of sources that were evaluated
       pvalue_adjust = pmin(pvalue_adjust, 1), # cap p-value at max 1
       signif = is.finite(pvalue_adjust) & pvalue_adjust <= cutoff
     )
