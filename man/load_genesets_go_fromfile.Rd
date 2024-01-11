@@ -27,8 +27,8 @@ Download link for gene ontology OBO file; http://current.geneontology.org/ontolo
 \examples{
 \dontrun{
   genesets_asis = load_genesets_go_fromfile(
-    file_gene2go = "C:/DATA/download_2023-01-01/gene2go",
-    file_goobo = "C:/DATA/download_2023-01-01/go.obo"
+    file_gene2go = "C:/DATA/download_2024-01-01/gene2go",
+    file_goobo = "C:/DATA/download_2024-01-01/go.obo"
   )
 }
 }

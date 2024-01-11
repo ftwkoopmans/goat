@@ -89,7 +89,7 @@ test_genesets = function(genesets, genelist, method, padj_method = "BH", padj_so
 
   # settings as string
   settings... = parameters_prettyprint_length1(...)
-  settings = sprintf("test_genesets(method='%s', padj_method='%s', padj_sources='%s', padj_cutoff=%s, padj_min_signifgenes=%s%s)",
+  settings = sprintf("test_genesets(method='%s', padj_method='%s', padj_sources=%s, padj_cutoff=%s, padj_min_signifgenes=%s%s)",
                      method, padj_method, padj_sources, padj_cutoff, padj_min_signifgenes, ifelse(settings... == "", "", paste0(", ", settings...)))
   attr(result, "settings") <- c(attr(genesets, "settings"), settings)
   return(result)

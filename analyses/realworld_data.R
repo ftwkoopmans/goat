@@ -20,8 +20,8 @@ dataset_names_go_analysis = grep("26931375", names(goat_example_datasets), ignor
 genesets_syngo = load_genesets_syngo("C:/DATA/SynGO_bulk_download_release_20231201/syngo_ontologies.xlsx", gene_database = "entrez")
 # genesets_syngo = load_genesets_syngo("C:/DATA/SynGO_bulk_download_release_20210225/syngo_ontologies.xlsx", gene_database = "entrez")
 genesets = load_genesets_go_fromfile(
-  file_gene2go = "C:/VU/projects/Frank - GOAT (2022)/genesets/gene2go_2023-11-01.gz",
-  file_goobo = "C:/VU/projects/Frank - GOAT (2022)/genesets/go_2023-11-01.obo"
+  file_gene2go = "C:/VU/projects/Frank - GOAT (2022)/genesets/gene2go_2024-01-01.gz",
+  file_goobo = "C:/VU/projects/Frank - GOAT (2022)/genesets/go_2024-01-01.obo"
 )
 # genesets = load_genesets_go_bioconductor() # the version of GO loaded here is determined by your Bioconductor installation
 
@@ -228,10 +228,10 @@ result_gsea |> filter(signif & source != "SYNGO_CC") |> select(-source_version)
 result_goat |> filter(signif & source != "SYNGO_CC") |> select(-source_version)
 
 results_klaassen = bind_rows(
-  results_klaassen,
-  result_ora  |> mutate(dataset_label = "Klaassen 2016:IP mass-spec:PMID26931375", method = "hypergeometric_down"),
-  result_gsea |> mutate(dataset_label = "Klaassen 2016:IP mass-spec:PMID26931375", method = "gsea_effectsize_down"),
-  result_goat |> mutate(dataset_label = "Klaassen 2016:IP mass-spec:PMID26931375", method = "goat_effectsize_down")
+  results_klaassen |> select(-parent_id),
+  result_ora  |> select(-parent_id) |> mutate(dataset_label = "Klaassen 2016:IP mass-spec:PMID26931375", method = "hypergeometric_down"),
+  result_gsea |> select(-parent_id) |> mutate(dataset_label = "Klaassen 2016:IP mass-spec:PMID26931375", method = "gsea_effectsize_down"),
+  result_goat |> select(-parent_id) |> mutate(dataset_label = "Klaassen 2016:IP mass-spec:PMID26931375", method = "goat_effectsize_down")
 )
 
 # clusters = cluster_genesets(result_goat, dataset_klaassen)

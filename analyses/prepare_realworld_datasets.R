@@ -8,7 +8,7 @@ devtools::load_all() # to reproduce this code on non-development system, replace
 
 
 
-hgnc = hgnc_lookuptable("C:/DATA/hgnc/hgnc_complete_set___2023-09-23.tsv")
+hgnc = hgnc_lookuptable("C:/DATA/hgnc/hgnc_complete_set__2024-01-01.txt")
 
 
 goat_example_datasets = list()

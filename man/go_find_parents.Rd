@@ -12,6 +12,5 @@ go_find_parents(child, parent)
 \item{parent}{array of GO term IDs that represent respective parents}
 }
 \description{
-instead of recursive lookups per term, we iteratively perform vectorized matching over the entire table
-since the GO tree/DAG is quite shallow, this is very fast
+from a directed edgelist (child-to-parent) to a recursive lookup of the final parent term / root
 }

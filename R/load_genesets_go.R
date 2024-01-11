@@ -19,7 +19,7 @@
 #' @return table with columns; source (character), source_version (character), id (character), name (character), genes (list), ngenes (int)
 #' @export
 load_genesets_go_bioconductor = function(include_child_annotations = TRUE) {
-  genes = go_id = GOID = TERM = ONTOLOGY = go_domain = source_version = go_name = ngenes = NULL # fix invisible bindings R package NOTE
+  genes = go_id = GOID = TERM = ONTOLOGY = go_domain = source_version = go_name = ngenes = parent_id = child_id = relation = name = NULL # fix invisible bindings R package NOTE
   check_dependency("AnnotationDbi", "loading GO data via Bioconductor")
   check_dependency("GO.db", "loading GO data via Bioconductor")
   check_dependency("org.Hs.eg.db", "loading GO data via Bioconductor")
@@ -34,9 +34,11 @@ load_genesets_go_bioconductor = function(include_child_annotations = TRUE) {
   go_annotations_metadata = AnnotationDbi::metadata(org.Hs.eg.db::org.Hs.eg.db)
   go_annotations_metadata = paste(go_annotations_metadata$value[match(c("GOSOURCENAME", "ORGANISM", "GOSOURCEDATE"), go_annotations_metadata$name)], collapse = " - ")
 
+  ### GO terms
+
   # from geneset list to long-format table
   result = tibble::tibble(go_id = rep(names(go_annotations_entrez), lengths(go_annotations_entrez)),
-         genes = unlist(go_annotations_entrez, recursive = F, use.names = F)) |>
+                          genes = unlist(go_annotations_entrez, recursive = F, use.names = F)) |>
     # enforce entrez gene IDs to be integers by stripping non-numeric parts
     # (not strictly needed atm, just a safeguard against future upstream changes, e.g. prefixing entrez IDs with 'entrez:')
     mutate(genes = gsub("\\D+","", genes)) |>
@@ -54,8 +56,42 @@ load_genesets_go_bioconductor = function(include_child_annotations = TRUE) {
       source_version = go_annotations_metadata,
       ngenes = lengths(genes)
     ) |>
-    select(source, source_version, id = go_id, name = go_name, genes, ngenes) # column ordering and renaming
+    rename(id = go_id, name = go_name)
 
+
+  ### links
+
+  extract_links = function(ids, GODBLINKS, relation_accept) {
+    # extract direct parents
+    GOdata = as.list(GODBLINKS[ids])
+    # unlist the named vector per GO term into a long-format table
+    links = dplyr::bind_rows(sapply(names(GOdata), function(n)
+      data.frame(child_id=n, parent_id=unname(GOdata[[n]]), relation=names(GOdata[[n]]), row.names = NULL), simplify = F, USE.NAMES = F))
+    links |>
+      # remove links to GO terms that are not in the current GO domain  +  remove unsupported relation types
+      filter(parent_id %in% ids & child_id %in% ids & relation %in% relation_accept) |>
+      # retain only unique parent/child links, discarding relation types
+      distinct(parent_id, child_id) |>
+      tibble::as_tibble()
+  }
+
+  # accepted relation types (as specified in GO.obo) + variations that the Bioconductor GO.db might use (e.g. "isa" or "part of")
+  relation_accept = c("is_a","part_of", "regulates", "positively_regulates", "negatively_regulates")
+  relation_accept = unique(c(relation_accept, sub("_", "", relation_accept), sub("_", " ", relation_accept)))
+
+  links_cc = extract_links(result |> filter(source=="GO_CC") |> pull(id), GO.db::GOCCPARENTS, relation_accept)
+  links_bp = extract_links(result |> filter(source=="GO_BP") |> pull(id), GO.db::GOBPPARENTS, relation_accept)
+  links_mf = extract_links(result |> filter(source=="GO_MF") |> pull(id), GO.db::GOMFPARENTS, relation_accept)
+
+  ### compose final result
+
+  result = result |>
+    left_join(
+      bind_rows(links_cc, links_bp, links_mf) |>  tidyr::chop(cols = parent_id),
+      by = c("id"="child_id")
+    ) |>
+    # column ordering and renaming
+    select(source, source_version, id, name, parent_id, genes, ngenes)
 
   attr(result, "settings") <- sprintf("load_genesets_go_bioconductor(include_child_annotations=%s) = '%s'",
                                       include_child_annotations, go_annotations_metadata)
@@ -71,8 +107,8 @@ load_genesets_go_bioconductor = function(include_child_annotations = TRUE) {
 #'
 #' @examples \dontrun{
 #'   genesets_asis = load_genesets_go_fromfile(
-#'     file_gene2go = "C:/DATA/download_2023-01-01/gene2go",
-#'     file_goobo = "C:/DATA/download_2023-01-01/go.obo"
+#'     file_gene2go = "C:/DATA/download_2024-01-01/gene2go",
+#'     file_goobo = "C:/DATA/download_2024-01-01/go.obo"
 #'   )
 #' }
 #' @param file_gene2go gene2go file from NCBI. Also works with the gzipped file gene2go.gz
@@ -81,7 +117,7 @@ load_genesets_go_bioconductor = function(include_child_annotations = TRUE) {
 #' @return table with columns; source (character), source_version (character), id (character), name (character), genes (list), ngenes (int)
 #' @export
 load_genesets_go_fromfile = function(file_gene2go, file_goobo, include_child_annotations = TRUE) {
-  genes = parent_id_recursive = namespace = source_version = name = ngenes = NULL # fix invisible bindings R package NOTE
+  genes = parent_id_recursive = namespace = source_version = name = ngenes = parent_id = NULL # fix invisible bindings R package NOTE
   # parse input data
   gene2go = go_gene2go(file_gene2go, taxid_filter = 9606)
   go = go_obo(file_goobo, rename_namespace = TRUE, remove_obsolete = TRUE)
@@ -93,7 +129,7 @@ load_genesets_go_fromfile = function(file_gene2go, file_goobo, include_child_ann
     # long-format table of all parent terms
     id_to_parents = go |>
       select(id, parent_id_recursive) |>
-      tidyr::unchop(parent_id_recursive)
+      tidyr::unchop(parent_id_recursive) # drop empty is fine; ignore terms without parents
 
     # gene*term pairs for all 'hierarchical rollup', associating genes with all recursive parents
     annotations_rollup = id_to_parents |>
@@ -106,15 +142,21 @@ load_genesets_go_fromfile = function(file_gene2go, file_goobo, include_child_ann
     # note that this overwrites the current 'direct annotations' table
     annotations = bind_rows(annotations, annotations_rollup |> select(id = parent_id_recursive, genes)) |>
       distinct(id, genes)
+
+    # debug;
+    # id_to_parents |> filter(parent_id_recursive == "GO:0005615") |> left_join(go |> select(id, name, namespace, obsolete)) |> arrange(name) |> print(n=Inf)
+    # id_to_parents |> filter(parent_id_recursive == "GO:0005576") |> left_join(go |> select(id, name, namespace, obsolete)) |> arrange(name) |> print(n=Inf)
+    # annotations |> filter(id %in% c("GO:0005576", "GO:0005615") & genes == 21) # this gene needs to be rolled up from 0005615 to 0005576
+    # annotations_rollup |> filter(genes == 21 & id %in% c("GO:0005576", "GO:0005615"))
   }
 
   # prepare a result table in the same format as other geneset import functions
   result = go |>
     mutate(
       source = paste0("GO_", namespace),
-      source_version = paste(file_gene2go, file_goobo),
+      source_version = paste(file_gene2go, file_goobo)
     ) |>
-    select(source, source_version, id, name) |>
+    select(source, source_version, id, name, parent_id) |>
     # note; drop_na() not strictly needed, nor is the sorting of genes
     left_join(annotations |> tidyr::drop_na() |> arrange(genes) |> tidyr::chop(cols = genes), by = "id") |>
     mutate(ngenes = lengths(genes)) |>
@@ -145,9 +187,10 @@ go_gene2go = function(f, taxid_filter = 9606) {
   # for robustness against future changes, e.g. colnames changing 'case'
   colnames(gene2go) = gsub("[^a-z]+", "", tolower(colnames(gene2go)))
 
+  # only taxid-of-interest
+  gene2go = gene2go |> filter(taxid == taxid_filter)
+
   gene2go |>
-    # only taxid-of-interest
-    filter(taxid == taxid_filter) |>
     # remove negative annotation. e.g. "NOT part_of" (do this after taxid filter for efficiency)
     filter( ! grepl("^not ", qualifier, ignore.case = T)) |>
     as_tibble() |>
@@ -176,52 +219,39 @@ go_gene2go = function(f, taxid_filter = 9606) {
 
 #' from a directed edgelist (child-to-parent) to a recursive lookup of the final parent term / root
 #'
-#' instead of recursive lookups per term, we iteratively perform vectorized matching over the entire table
-#' since the GO tree/DAG is quite shallow, this is very fast
-#'
 #' @param child array of GO term IDs that represent children
 #' @param parent array of GO term IDs that represent respective parents
 go_find_parents = function(child, parent) {
-  stopifnot(length(child) > 0 & !anyNA(child) & !anyNA(parent) & length(child) == length(parent))
+  newchild = NULL # fix invisible bindings R package NOTE
+  stopifnot(length(child) > 0 & length(child) == length(parent) & !anyNA(child) & !anyNA(parent))
 
-  # initialize result matrix; provided child/parent pairs
-  mat = cbind(child, parent)
-  colnames(mat) = c("child", "parent")
-  last = parent
+  # initialize result matrix; provided child/parent pairs (direct links)
+  input = data.frame(child, parent)
+  x = data.frame(child, parent, done = ! parent %in% child)
 
   max_depth = 1000
-  n = 1
-  while(TRUE) {
+  n = 0
+  while(any(!x$done)) {
     n = n + 1
     if(n > max_depth) {
       stop("unexpected depth while traversing GO structure, is the provided structure not a DAG or tree ?!")
     }
 
-    # match GO ID from 'latest parent list' against 'child', so we know what the parent-of-parent is
-    j = match(last, child)
-    if(any(!is.na(j))) {
-      # new result = link between 'latest parent list' and their respective parents
-      tmp = cbind(child, parent[j])
-      # remove NA matches (e.g. previous parent was NA to begin with, or there is no parent-of-parent)
-      tmp = tmp[!is.na(tmp[,1]) & !is.na(tmp[,2]), , drop=F]
-      # keep going on success, break otherwise
-      if(nrow(tmp) > 0) {
-        mat = rbind(mat, tmp)
-        last = parent[j]
-      } else {
-        break
-      }
-    } else {
-      break
-    }
+    # construct map for TODO rows. Use left-join so we include 1:n links (i.e. don't use match())
+    y = left_join(data.frame(child = x$parent[!x$done], newchild = x$child[!x$done]), input, by = "child") |>
+      select(child = newchild, parent)
+    # only done if new parent/end was already followed through
+    y$done = ! y$parent %in% x$child
+
+    # flag previous batch as done
+    x$done = TRUE
+    # update resultset
+    x = bind_rows(x, y)
   }
 
-  # remove duplicates
-  # our vectorized matching is quite fast but generates duplicates because we pass the same 'path to tree root' many times
-  mat = mat[!duplicated(mat), , drop=F]
-
-  # return as a tibble
-  tibble::as_tibble(mat)
+  # remove duplicates and return as a tibble with unique child/parent pairs
+  x$done = NULL
+  tibble::as_tibble(x) |> distinct_all()
 }
 
 
@@ -307,7 +337,7 @@ go_obo = function(f, rename_namespace = TRUE, remove_obsolete = TRUE) {
     select(id, parent_id)
 
   # find recursive path up to root / last parent
-  golinks_recursive = go_find_parents(golinks$id, golinks$parent_id)
+  golinks_recursive = go_find_parents(child = golinks$id, parent = golinks$parent_id)
 
   ### QC
   # # show all OBO lines related to term 'synaptic vesicle'

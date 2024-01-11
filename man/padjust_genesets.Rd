@@ -16,7 +16,7 @@ padjust_genesets(
 
 \item{method}{method for multiple testing correction, must be any of \code{stats::p.adjust.methods}, e.g. "BH" or "bonferroni"}
 
-\item{cutoff}{cutoff for adjusted p-value (lesser-equals tests), \code{signif} column is set to TRUE for all values lesser-equals}
+\item{cutoff}{numeric cutoff value for adjusted p-value, \code{signif} column is set to TRUE for all values lesser-equals}
 
 \item{correct_sources}{apply Bonferroni adjustment to all p-values according to the number of geneset sources that were tested. Boolean parameter, set TRUE to enable (default) or FALSE to disable}
 }

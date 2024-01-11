@@ -166,6 +166,7 @@ methods_text = function(x, genelist, settings) {
 
   method = get_setting("test_genesets *\\( *method", settings)
   padj_method = get_setting("padj_method", settings)
+  padj_sources = get_setting("padj_sources", settings)
   padj_cutoff = get_setting("padj_cutoff", settings)
   score_type = get_setting("score_type", settings, "")
   min_overlap = get_setting("min_overlap", settings)
@@ -182,7 +183,7 @@ methods_text = function(x, genelist, settings) {
   # cite R package
   result = paste0(
     'Geneset analyses\n',
-    'The GOAT [doi:10.1101/2023.12.10.570979] R package (version ', goat_version(),
+    'The GOAT R package [doi:10.1101/2023.12.10.570979] (version ', goat_version(),
     ' , https://github.com/ftwkoopmans/goat ) was used to perform geneset enrichment analyses',
     # algorithm / method
     ' with the ', toupper(method), ' algorithm'
@@ -212,7 +213,7 @@ methods_text = function(x, genelist, settings) {
     ifelse(tolower(padj_method) == "bonferroni",
            ' using Bonferroni adjustment',
            ' using the Benjamini-Hochberg procedure (FDR)'),
-    ifelse(length(usource) > 1,
+    ifelse(padj_sources && length(usource) > 1,
            paste0(' and subsequently all p-values were adjusted (again) using Bonferroni adjustment to account for ',
                   length(usource), ' separate tests across "sources". '),
            '. '),

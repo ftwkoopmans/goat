@@ -35,12 +35,13 @@ validate_genesets = function(genesets, require_signif = TRUE, check_gene_identie
 
 
   # 3) check non-list columns for NA values
-  ok = !anyNA(genesets) &&
-    all(genesets$source != "") &&
-    all(genesets$source_version != "") &&
-    all(genesets$id != "") &&
-    all(genesets$name != "") &&
-    all(is.finite(genesets$ngenes) & is.integer(genesets$ngenes)) &&
+  ok = all(
+    !is.na(genesets$source) & genesets$source != "" &
+      !is.na(genesets$source_version) & genesets$source_version != "" &
+      !is.na(genesets$id) & genesets$id != "" &
+      !is.na(genesets$name) & genesets$name != "" &
+      is.finite(genesets$ngenes) & is.integer(genesets$ngenes)
+  ) &&
     (!require_signif || all(is.finite(genesets$ngenes_signif) & is.integer(genesets$ngenes_signif)) )
 
 

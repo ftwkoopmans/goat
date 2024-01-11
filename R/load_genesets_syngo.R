@@ -16,7 +16,7 @@
 #' @return table with columns; source (character), source_version (character), id (character), name (character), genes (list), ngenes (int)
 #' @export
 load_genesets_syngo = function(filename, gene_database = "entrez") {
-  name = domain = genes = go_name = go_id = go_domain = source_version = ngenes = NULL # fix invisible bindings R package NOTE
+  name = domain = genes = go_name = go_id = go_domain = source_version = ngenes = parent_id = NULL # fix invisible bindings R package NOTE
   stopifnot("filename parameter must be an existing file" = length(filename) == 1 && is.character(filename) && file.exists(filename))
   stopifnot("gene_database parameter must be any of; 'entrez' or 'hgnc' or 'ensembl'" = length(gene_database) == 1 && gene_database %in% c("hgnc", "entrez", "ensembl"))
 
@@ -25,10 +25,23 @@ load_genesets_syngo = function(filename, gene_database = "entrez") {
   if(gene_database == "ensembl") col_gene = "ensembl_id"
 
   input = readxl::read_excel(filename)
-  stopifnot(c("id", "name", "domain", col_gene) %in% colnames(input))
+  # robust colnames for compat with v1.0
+  colnames(input) = gsub("[^a-z0_]+", "", tolower(colnames(input)))
+  colnames(input)[colnames(input) == "gotermid"] = "id"
+  colnames(input)[colnames(input) == "gotermname"] = "name"
+  colnames(input)[colnames(input) == "godomain"] = "domain"
+  colnames(input)[colnames(input) == "goparenttermid"] = "parent_id"
+  colnames(input)[colnames(input) == "geneshgnc_id"] = "hgnc_id"
+  # colnames(input)[colnames(input) == "geneshgnc_symbol"] = "hgnc_symbol"
+
+  cols_required = c("id", "name", "domain", "parent_id", col_gene)
+  if(!all(cols_required %in% colnames(input))) {
+    stop(paste("missing column names:", paste(setdiff(cols_required, colnames(input)), collapse = " , ")))
+  }
+
 
   result = input |>
-    select(go_id = id, go_name = name, go_domain = domain, genes = {{col_gene}}) |>
+    select(go_id = id, go_name = name, go_domain = domain, parent_id, genes = {{col_gene}}) |>
     filter(nchar(genes) > 0) |>
     mutate( # remove ontology ID from name column
       go_name = sub(" *\\((SYNGO|GO):.*", "", go_name),
@@ -59,7 +72,7 @@ load_genesets_syngo = function(filename, gene_database = "entrez") {
     mutate(source = paste0("SYNGO_", go_domain),
            source_version = filename,
            ngenes = lengths(genes)) |>
-    select(source, source_version, id=go_id, name=go_name, genes, ngenes) # column ordering and renaming
+    select(source, source_version, id=go_id, name=go_name, parent_id, genes, ngenes) # column ordering and renaming
 
   attr(result, "settings") <- sprintf("load_genesets_syngo(filename='%s', gene_database='%s')",
                                       filename, gene_database)

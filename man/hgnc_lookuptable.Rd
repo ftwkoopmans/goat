@@ -16,7 +16,7 @@ a long-format table with columns; hgnc_id, hgnc_symbol, type, value
 download link: https://www.genenames.org/download/statistics-and-files/
 table: "Complete dataset download links" -->> "Complete HGNC approved dataset" -->> download the "TXT" table
 filename is typically something like hgnc_complete_set.txt
-URL as of September 2023; https://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/tsv/hgnc_complete_set.txt
+URL; https://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/tsv/hgnc_complete_set.txt
 }
 \section{alternatively;}{
 table: "Total Approved Symbols" -->> "TXT" / "text file in TSV format"
