@@ -24,19 +24,23 @@ load_genesets_go_bioconductor = function(include_child_annotations = TRUE) {
   check_dependency("GO.db", "loading GO data via Bioconductor")
   check_dependency("org.Hs.eg.db", "loading GO data via Bioconductor")
 
+
+  ### Bioconductor GO terms and respective annotations (Entrez gene format)
+
   # using Bioconductor package 'GO.db', get a table of GO ID, name, ontology (CC/BP/MF)
   go_terms = suppressMessages(AnnotationDbi::select(GO.db::GO.db, keys = AnnotationDbi::keys(GO.db::GO.db), columns = c("TERM","ONTOLOGY"), keytype = "GOID", multiVals = "first"))
   # using Bioconductor package 'org.Hs.eg.db', get a list of GO ID with values entrez ID
-  keys = setdiff(AnnotationDbi::keys(org.Hs.eg.db::org.Hs.eg.db, "GO"), c("GO:0003674", "GO:0008150", "GO:0005575")) # exclude top-level ontologies like "molecular function" and CC/BP counterparts (basically entire realm)
+  keys = setdiff(unique(go_terms$GOID), c("GO:0003674", "GO:0008150", "GO:0005575")) # exclude top-level ontologies like "molecular function" and CC/BP counterparts (basically entire realm)
+  # bugfix; previously we used `AnnotationDbi::keys(org.Hs.eg.db::org.Hs.eg.db, "GO")` to extract all unique GO term IDs but this seems to be bugged; it leaves out many legit terms (e.g. ribosomal subunit GO:0044391) that do have annotations in org.Hs.eg.db::org.Hs.eg.db !
+  # extract annotations
   go_annotations_entrez = suppressMessages(AnnotationDbi::mapIds(org.Hs.eg.db::org.Hs.eg.db, keys = keys, column = "ENTREZID", keytype = ifelse(include_child_annotations, "GOALL", "GO"), multiVals = "list"))
-  go_annotations_entrez = go_annotations_entrez[lengths(go_annotations_entrez) > 0]
   # GO DB version
   go_annotations_metadata = AnnotationDbi::metadata(org.Hs.eg.db::org.Hs.eg.db)
   go_annotations_metadata = paste(go_annotations_metadata$value[match(c("GOSOURCENAME", "ORGANISM", "GOSOURCEDATE"), go_annotations_metadata$name)], collapse = " - ")
 
-  ### GO terms
 
-  # from geneset list to long-format table
+  ### convert Bioconductor data into a table compatible with this R package
+
   result = tibble::tibble(go_id = rep(names(go_annotations_entrez), lengths(go_annotations_entrez)),
                           genes = unlist(go_annotations_entrez, recursive = F, use.names = F)) |>
     # enforce entrez gene IDs to be integers by stripping non-numeric parts
@@ -59,17 +63,17 @@ load_genesets_go_bioconductor = function(include_child_annotations = TRUE) {
     rename(id = go_id, name = go_name)
 
 
-  ### links
+  ### ontology DAG
 
-  extract_links = function(ids, GODBLINKS, relation_accept) {
+  extract_links = function(GODBLINKS, relation_accept) {
     # extract direct parents
-    GOdata = as.list(GODBLINKS[ids])
+    GOdata = as.list(GODBLINKS)
     # unlist the named vector per GO term into a long-format table
     links = dplyr::bind_rows(sapply(names(GOdata), function(n)
       data.frame(child_id=n, parent_id=unname(GOdata[[n]]), relation=names(GOdata[[n]]), row.names = NULL), simplify = F, USE.NAMES = F))
     links |>
-      # remove links to GO terms that are not in the current GO domain  +  remove unsupported relation types
-      filter(parent_id %in% ids & child_id %in% ids & relation %in% relation_accept) |>
+      # remove unsupported relation types
+      filter(relation %in% relation_accept) |>
       # retain only unique parent/child links, discarding relation types
       distinct(parent_id, child_id) |>
       tibble::as_tibble()
@@ -78,10 +82,11 @@ load_genesets_go_bioconductor = function(include_child_annotations = TRUE) {
   # accepted relation types (as specified in GO.obo) + variations that the Bioconductor GO.db might use (e.g. "isa" or "part of")
   relation_accept = c("is_a","part_of", "regulates", "positively_regulates", "negatively_regulates")
   relation_accept = unique(c(relation_accept, sub("_", "", relation_accept), sub("_", " ", relation_accept)))
+  # links from GO.db::GOCCPARENTS are supposed to be within-GO-domain (e.g. no links from BP to CC)
+  links_cc = extract_links(GO.db::GOCCPARENTS, relation_accept)
+  links_bp = extract_links(GO.db::GOBPPARENTS, relation_accept)
+  links_mf = extract_links(GO.db::GOMFPARENTS, relation_accept)
 
-  links_cc = extract_links(result |> filter(source=="GO_CC") |> pull(id), GO.db::GOCCPARENTS, relation_accept)
-  links_bp = extract_links(result |> filter(source=="GO_BP") |> pull(id), GO.db::GOBPPARENTS, relation_accept)
-  links_mf = extract_links(result |> filter(source=="GO_MF") |> pull(id), GO.db::GOMFPARENTS, relation_accept)
 
   ### compose final result
 
