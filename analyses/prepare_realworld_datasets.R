@@ -172,7 +172,10 @@ goat_example_datasets[["Klaassen 2016:IP mass-spec:PMID26931375"]] = genelist
 
 
 
+########## the list of datasets is now done. Below code attaches it to our R package (provided you're in the development environment)
 
-# to reproduce: update file path
-# save(goat_example_datasets, file = "C:/temp/goat_example_datasets.rda", compress = "xz")
+## to reproduce: update file path
 # usethis::use_data(goat_example_datasets, overwrite = T, compress = "xz")
+
+## store as RData file on disk as well
+# save(goat_example_datasets, file = "C:/temp/goat_example_datasets.rda", compress = "xz")

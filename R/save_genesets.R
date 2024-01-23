@@ -213,7 +213,7 @@ methods_text = function(x, genelist, settings) {
     ifelse(tolower(padj_method) == "bonferroni",
            ' using Bonferroni adjustment',
            ' using the Benjamini-Hochberg procedure (FDR)'),
-    ifelse(padj_sources && length(usource) > 1,
+    ifelse(padj_sources == "TRUE" && length(usource) > 1,
            paste0(' and subsequently all p-values were adjusted (again) using Bonferroni adjustment to account for ',
                   length(usource), ' separate tests across "sources". '),
            '. '),

@@ -2,11 +2,11 @@
 #' Wrapper function for goat_nulldistribution_function, typically used to generate the Rdata file with precomputed null distribution that is bundled with GOAT
 #'
 #' @examples \dontrun{
-#' # example 1; precompute parameters for a huge range of genesets
+#' # example 1; precompute parameters for a huge range of genesets, 500k permuations
 #' goat_nulldistribution_function_generator(
 #'   seq(from=100, to=20000, by=1), 500000, "C:/temp/", overwrite=TRUE, verbose=TRUE
 #' )
-#' # example 2; many permutations, a few very different genelist lengths; review QC plots
+#' # example 2; 2million permutations, a few very different genelist lengths; review QC plots
 #' goat_nulldistribution_function_generator(
 #'   c(100, 500, 1000, 5000, 15000), 2000000, "C:/temp/", overwrite=TRUE, verbose=TRUE
 #' )

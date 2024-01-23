@@ -1,7 +1,7 @@
 Package: goat
 Type: Package
 Title: Geneset Ordinal Association Test (GOAT)
-Version: 0.9.3
+Version: 0.9.4
 Authors@R: 
     person(given = "Frank",
            family = "Koopmans",
@@ -28,6 +28,7 @@ Imports:
     MonoPoly (>= 0.3-10),
     ggplot2 (>= 3.3.0),
     pheatmap,
+    treemap,
     igraph (>= 1.2.5),
     ggraph (>= 2.0.0),
     AnnotationDbi,

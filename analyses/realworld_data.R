@@ -56,7 +56,7 @@ for(n in dataset_names_go_analysis) {
 tib_plot = results_generic |>
   filter(dataset_label %in% dataset_names_go_analysis) |>
   mutate(
-    dataset_label = sub(":", ":\n", sub(":PMID\\d+", "", dataset_label, ignore.case = TRUE)),
+    dataset_label = sub(":", "\n", sub(":PMID\\d+", "", dataset_label, ignore.case = TRUE)),
     source = gsub("_", " ", source)
   ) |>
   group_by(dataset_label, source, method) |>
@@ -89,8 +89,6 @@ Sys.sleep(1)
 graphics.off()
 # as SVG for website
 svglite::svglite(filename = "C:/temp/barplot_signif_count.svg", width = 8, height = 4.5)
-print(p)
-dev.off()
 
 
 # total number of significant GO terms (across all CC/MF/BP domains) per dataset
@@ -178,71 +176,7 @@ Sys.sleep(1)
 graphics.off()
 ################################################################################################################################################################################
 
-
-results_klaassen = NULL
-
-
-#### example: apply GO analysis specifically for down-regulated proteins (i.e. those down-regulated after knockout)
-dataset_klaassen = goat_example_datasets$`Klaassen 2016:IP mass-spec:PMID26931375`
-# for ORA, change "significant" definition to subset of down-regulated
-dataset_klaassen$signif = dataset_klaassen$signif & dataset_klaassen$effectsize < 0
-# filter GO genesets by overlap with this dataset
-genesets_filtered = filter_genesets(genesets, dataset_klaassen, min_overlap = 10L, max_overlap = 1500L, max_overlap_fraction = 0.5, min_signif = NA, max_size = NA, dedupe = FALSE)
-# apply algorithms
-result_ora = test_genesets(genesets_filtered, dataset_klaassen, method = "hypergeometric", padj_method = "bonferroni", padj_cutoff = 0.05, require_nsignif = 2L)
-result_gsea = test_genesets(genesets_filtered, dataset_klaassen, method = "gsea", score_type = "custom", gsea_scoretype = "neg", gsea_genelist_col = "effectsize", padj_method = "bonferroni", padj_cutoff = 0.05)
-result_goat = test_genesets(genesets_filtered, dataset_klaassen, method = "goat", score_type = "effectsize_down", padj_method = "bonferroni", padj_cutoff = 0.05)
-# report signif counts per GO source
-result_ora |> group_by(source) |> summarise(signif_count = sum(signif), .groups="drop")
-result_gsea |> group_by(source) |> summarise(signif_count = sum(signif), .groups="drop")
-result_goat |> group_by(source) |> summarise(signif_count = sum(signif), .groups="drop")
-# print CC terms; GOAT finds synapse-specific terms
-result_ora  |> filter(signif & source == "GO_CC" & grepl("synap", name)) |> select(-source_version)
-result_gsea |> filter(signif & source == "GO_CC" & grepl("synap", name)) |> select(-source_version)
-result_goat |> filter(signif & source == "GO_CC" & grepl("synap", name)) |> select(-source_version)
-
-results_klaassen = bind_rows(
-  results_klaassen,
-  result_ora  |> mutate(dataset_label = "Klaassen 2016:IP mass-spec:PMID26931375", method = "hypergeometric_down"),
-  result_gsea |> mutate(dataset_label = "Klaassen 2016:IP mass-spec:PMID26931375", method = "gsea_effectsize_down"),
-  result_goat |> mutate(dataset_label = "Klaassen 2016:IP mass-spec:PMID26931375", method = "goat_effectsize_down")
-)
-
-### repeat with SynGO
-# filter GO genesets by overlap with this dataset
-genesets_syngo_filtered = filter_genesets(genesets_syngo, dataset_klaassen, min_overlap = 10L, max_overlap = 1500L, max_overlap_fraction = 0.5, min_signif = NA, max_size = NA, dedupe = FALSE)
-# apply algorithms
-result_ora = test_genesets(genesets_syngo_filtered, dataset_klaassen, method = "hypergeometric", padj_method = "bonferroni", padj_cutoff = 0.05, require_nsignif = 2L)
-result_gsea = test_genesets(genesets_syngo_filtered, dataset_klaassen, method = "gsea", score_type = "custom", gsea_scoretype = "neg", gsea_genelist_col = "effectsize", padj_method = "bonferroni", padj_cutoff = 0.05)
-result_goat = test_genesets(genesets_syngo_filtered, dataset_klaassen, method = "goat", score_type = "effectsize_down", padj_method = "bonferroni", padj_cutoff = 0.05)
-# report signif counts per GO source
-result_ora |> group_by(source) |> summarise(signif_count = sum(signif), .groups="drop")
-result_gsea |> group_by(source) |> summarise(signif_count = sum(signif), .groups="drop")
-result_goat |> group_by(source) |> summarise(signif_count = sum(signif), .groups="drop")
-# print CC terms; GOAT finds synapse-specific terms
-result_ora  |> filter(signif & source == "SYNGO_CC") |> select(-source_version)
-result_gsea |> filter(signif & source == "SYNGO_CC") |> select(-source_version)
-result_goat |> filter(signif & source == "SYNGO_CC") |> select(-source_version)
-result_ora |> filter(signif & source != "SYNGO_CC") |> select(-source_version)
-result_gsea |> filter(signif & source != "SYNGO_CC") |> select(-source_version)
-result_goat |> filter(signif & source != "SYNGO_CC") |> select(-source_version)
-
-results_klaassen = bind_rows(
-  results_klaassen |> select(-parent_id),
-  result_ora  |> select(-parent_id) |> mutate(dataset_label = "Klaassen 2016:IP mass-spec:PMID26931375", method = "hypergeometric_down"),
-  result_gsea |> select(-parent_id) |> mutate(dataset_label = "Klaassen 2016:IP mass-spec:PMID26931375", method = "gsea_effectsize_down"),
-  result_goat |> select(-parent_id) |> mutate(dataset_label = "Klaassen 2016:IP mass-spec:PMID26931375", method = "goat_effectsize_down")
-)
-
-# clusters = cluster_genesets(result_goat, dataset_klaassen)
-# plot_heatmap(clusters, "C:/temp/")
-
-results_combined = bind_rows(results_generic, results_klaassen)
-
-
-### finally, write results to file
-writexl::write_xlsx(results_combined, "C:/temp/realworld_datasets_geneset_statistics.xlsx")
-writexl::write_xlsx(results_combined |> filter(signif), "C:/temp/realworld_datasets_geneset_statistics_only_signif.xlsx")
-save(results_combined, clr, file = "C:/temp/realworld_data.RData")
-
+writexl::write_xlsx(results_generic, "C:/temp/realworld_datasets_geneset_statistics.xlsx")
+writexl::write_xlsx(results_generic |> filter(signif), "C:/temp/realworld_datasets_geneset_statistics_only_signif.xlsx")
+save(results_generic, clr, file = "C:/temp/realworld_data.RData")
 
