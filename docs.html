@@ -14,22 +14,23 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	
 		<link href="./_app/immutable/assets/3.c5d9d0ea.css" rel="stylesheet">
-		<link href="./_app/immutable/assets/app.0f494d5b.css" rel="stylesheet">
-		<link rel="modulepreload" href="./_app/immutable/entry/start.56a1c394.js">
+		<link href="./_app/immutable/assets/app.c6a029fe.css" rel="stylesheet">
+		<link rel="modulepreload" href="./_app/immutable/entry/start.008c3a23.js">
 		<link rel="modulepreload" href="./_app/immutable/chunks/scheduler.cd38125d.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.86e3d5b5.js">
-		<link rel="modulepreload" href="./_app/immutable/entry/app.1d56dfb4.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.86de3700.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/app.6f9145e1.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/preload-helper.a4192956.js">
 		<link rel="modulepreload" href="./_app/immutable/chunks/index.a6a2bf8f.js">
 		<link rel="modulepreload" href="./_app/immutable/nodes/0.1790fe3c.js">
-		<link rel="modulepreload" href="./_app/immutable/nodes/3.8ff14f73.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/stores.94ad381a.js"><title>GOAT: Geneset Ordinal Association Test - documentation</title><!-- HEAD_svelte-1m51m41_START --><meta name="description" content="Geneset enrichment analysis for Geneset Ontology (GO) or KEGG pathways using the GOAT algorithm webtool. Online data analysis for your preranked genelist from e.g. proteomics or bulk/scRNAseq gene expression studies"><!-- HEAD_svelte-1m51m41_END -->
+		<link rel="modulepreload" href="./_app/immutable/nodes/3.b78bde72.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/stores.3ed8a801.js"><title>GOAT: Geneset Ordinal Association Test - documentation</title><!-- HEAD_svelte-1m51m41_START --><meta name="description" content="Geneset enrichment analysis for Geneset Ontology (GO) or KEGG pathways using the GOAT algorithm webtool. Online data analysis for your preranked genelist from e.g. proteomics or bulk/scRNAseq gene expression studies"><!-- HEAD_svelte-1m51m41_END -->
 </head>
 
 <body data-sveltekit-preload-data="hover">
 	<div style="display: contents">   <nav><div style="padding: 4px; margin-left: 20px;"><a href="/"><img src="/android-chrome-192x192.png" width="40" height="40" alt="GOAT"></a></div> <a href="/" style="margin-left: 5px;">Home</a> <a href="/goat" style="margin-left: 40px;">GOAT online</a> <a href="/genemap" style="margin-left: 40px;">gene ID mapping</a> <a href="/docs" style="margin-left: 40px;" class="active">Documentation</a></nav> <h1 data-svelte-h="svelte-fjilyk">Documentation</h1> <div data-svelte-h="svelte-1vomu16"><h3>Citation</h3> <div><p>The GOAT algorithm has not been published yet but a preprint is available, please cite it when
 			using the early-access version of GOAT;
 			<br> <i>Koopmans, F. (2023). GOAT: efficient and robust identification of geneset enrichment.</i> <br><a href="https://doi.org/10.1101/2023.12.10.570979" target="_blank" rel="nofollow">https://doi.org/10.1101/2023.12.10.570979</a></p> <p>A ready-made M&amp;M text describing your GOAT analysis is included with this tool&#39;s results
-			(c.f. the log file contained in the output ZIP-file).</p></div></div> <div style="margin-top: 50px;" data-svelte-h="svelte-d0bzdd"><h3>How do I use this tool?</h3> <div><div>brief overview of workflow (more elaborate docs coming soon(tm))</div> <div><ol><li class="svelte-pooqga">input data: genelist</li> <li class="svelte-pooqga">input data: genesets</li> <li class="svelte-pooqga">settings</li> <li class="svelte-pooqga">start</li> <li class="svelte-pooqga">view summary table + download link (contains Excel table and M&amp;M for your paper)</li> <li class="svelte-pooqga">use interactive data analysis tools to inspect results</li></ol></div></div> <br> <b>Can I use the GOAT algorithm programmatically?</b> <div style="margin-top: 5px;">Yes! We also provide a R package; <a href="https://github.com/ftwkoopmans/goat" target="_blank" rel="nofollow">via this link</a></div></div> <div style="margin-top: 50px;" data-svelte-h="svelte-14m738q"><h3>Expected file format for the input genelist:</h3> <div><ul><li class="svelte-pooqga">File format: either CSV, TSV or Excel (.xlsx file, data on the first sheet). Note that for
+			(c.f. the log file contained in the output ZIP-file).</p></div></div> <div style="margin-top: 50px;" data-svelte-h="svelte-1tidcjw"><h3>How do I use this tool?</h3> <div><div>brief overview of workflow (more elaborate docs coming soon)</div> <div><ol><li class="svelte-pooqga">input data: genelist (your dataset, prepared as specified in the section below)</li> <li class="svelte-pooqga">select genesets (e.g. GO or SynGO, provided by GOAT online)</li> <li class="svelte-pooqga">settings (e.g. for multiple testing correction)</li> <li class="svelte-pooqga">run the analysis by clicking &quot;START&quot;</li> <li class="svelte-pooqga">download results; Excel table with all genesets and M&amp;M for your paper</li> <li class="svelte-pooqga">use interactive data analysis tools to visualize/interpret results</li></ol></div></div> <br> <b>Can I use the GOAT algorithm programmatically?</b> <div style="margin-top: 5px;">Yes! We also provide a R package; <a href="https://github.com/ftwkoopmans/goat" target="_blank" rel="nofollow">via this link</a></div></div> <div style="margin-top: 50px;" data-svelte-h="svelte-1tx9yrt"><h3>Expected file format for the input genelist:</h3> <div><ul><li class="svelte-pooqga">File format: either CSV, TSV or Excel (.xlsx file, data on the first sheet). Note that for
 				Excel, the old .xls is not supported, only the newer .xlsx format.</li> <li class="svelte-pooqga">Required columns (column names must match exactly)</li> <ol><li class="svelte-pooqga"><b>gene</b>: Human Entrez (NCBI) gene IDs (integer values)</li> <li class="svelte-pooqga"><b>symbol</b>: gene symbol (at least 2 characters)</li> <li class="svelte-pooqga"><b>effectsize</b>: effectsize or log2 foldchange (numeric/decimal values)</li> <li class="svelte-pooqga"><b>pvalue</b>: gene p-values (numeric/decimal values). Preferably, use the un-adjusted
 					p-values because this information is used for sorting and after adjustment, there
 					typically are many more ties (e.g. p-values set to 1) which in turn causes a loss of
@@ -50,9 +51,9 @@
 		&#39;gene&#39; column).
 		<br>
 		We provide a gene ID mapping tool (available through the menu on top of this screen) to easily add
-		Entrez gene IDs to your genelists in case these only contain gene symbols.</div> <div style="margin-bottom: 10px;">Example genelist: <a href="Hondius_2021_mass-spec_PMID33492460.xlsx">click here to download</a> the
-		Hondius et al. (2021, PMID:33492460) dataset in Excel format, an example for preparing your genelist
-		in a format compatible with GOAT.</div> <div>Example genelist: <a href="Klaassen_2016_IP_mass-spec_PMID26931375.xlsx">click here to download</a> the Klaassen et al. (2016, PMID:26931375) dataset in Excel format, an additional example.</div></div> <div style="margin-top: 50px;" data-svelte-h="svelte-ktgcbp"><h3>Using custom genesets</h3> <div>Genesets prepared in the generic GMT file format can be imported. For example, KEGG pathways in
+		Entrez gene IDs to your genelists in case these only contain gene symbols.</div> <div style="margin-bottom: 10px;">Example genelist: <a href="data/example_genelist_Wingo_pmid32424284.xlsx">click here to download</a>
+		the Wingo et al. 2020 dataset in Excel format (<a href="https://pubmed.ncbi.nlm.nih.gov/32424284" target="_blank" rel="nofollow">PMID:32424284</a>) . You may use this as an example for preparing your genelist in a format compatible with
+		GOAT.</div></div> <div style="margin-top: 50px;" data-svelte-h="svelte-ktgcbp"><h3>Using custom genesets</h3> <div>Genesets prepared in the generic GMT file format can be imported. For example, KEGG pathways in
 		GMT format can be downloaded <a href="https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp" target="_blank" rel="nofollow">via this link</a>. Navigate to the &quot;KEGG_LEGACY subset of CP&quot; section and select &quot;NCBI (Entrez) Gene IDs&quot;. This
 		should yield a file with a name similar to &quot;c2.cp.kegg.v2023.1.Hs.entrez.gmt&quot; (depending on the
 		version). GOAT online only works when input genelists and genesets use Entrez Gene identifiers,
@@ -67,12 +68,23 @@
 		automated workflow for importing the latest GO database N times per year using GitHub Actions
 		(i.e. won&#39;t rely on us manually updating this website).
 		<br>Further, you can always import any geneset collection in GMT format into this webtool.</p> <p><i>Does the webtool yield the same geneset p-values as the R package?</i> <br>Yes. We validated that the geneset p-values computed by GOAT online and the GOAT R package
-		are the same across all 7 &#39;omics datasets that are described in the GOAT manuscript.</p></div> <div style="margin-top: 50px;" data-svelte-h="svelte-ixuru7"><h3>Privacy</h3> <ul><li class="svelte-pooqga">all analyses are performed locally on your computer using client-side Javascript code</li> <li class="svelte-pooqga">your genelist and all analyses thereof remain private, your data does not leave your computer</li> <li class="svelte-pooqga">we do keep a counter for the number of times this tool is used to gauge its popularity</li></ul></div> <div style="margin-top: 50px;" data-svelte-h="svelte-8ovfie"><h3>Logo</h3> <p>the GOAT logo shown on this website is borrowed from the open source Noto Emoji Font version
+		are the same across all 7 &#39;omics datasets that are described in the GOAT manuscript.</p></div> <div style="margin-top: 50px"><h3 data-svelte-h="svelte-1xztreg">Description of the GOAT algorithm</h3> <p data-svelte-h="svelte-1zbiyw">In brief, the Geneset Ordinal Association Test (GOAT) is a parameter-free permutation-based
+		algorithm for geneset enrichment analysis. It is easy to use via the online webtool or R
+		package, computationally efficient and the resulting geneset p-values are well calibrated under
+		the null hypothesis and invariant to geneset size. Application to various real-world proteomics
+		and gene expression studies demonstrates that GOAT consistently identifies more significant Gene
+		Ontology terms as compared to alternative methods.</p> <div><img src="/goat_algorithm.png" alt="GOAT algorithm" width="900"></div> <div style="padding: 0px 50px 0px 10px;" data-svelte-h="svelte-xqe9tv"><ol><li class="svelte-pooqga">Required input are a list of genes and their respective test statistics (p-value /
+				effectsize), and a list of genesets obtained from GO or alternative resources.</li> <li class="svelte-pooqga">Test statistics from the genelist are transformed to gene scores by rank(-pvalue)^2 or
+				rank(effectsize)^2 depending on user-input, i.e. smaller p-values translate to higher gene
+				scores. The result is a skewed gene score distribution.</li> <li class="svelte-pooqga">For each geneset size N (number of genes), bootstrapping procedures generate a null
+				distribution of geneset scores. This yields a skewed-normal distribution for small genesets
+				and converges to a normal distribution for large genesets.</li> <li class="svelte-pooqga">Geneset significance is determined for each geneset by comparing its score (mean of
+				respective gene scores) against a null distribution of the same size (N).</li></ol></div></div> <div style="margin-top: 50px;" data-svelte-h="svelte-1k4jaeb"><h3>Privacy</h3> <ul><li class="svelte-pooqga">all analyses are performed locally on your computer using client-side Javascript code</li> <li class="svelte-pooqga">your genelist and all analyses thereof remain private, your data does not leave your computer</li> <li class="svelte-pooqga">we do count the number of times this tool is used, anonymously, to gauge its popularity</li></ul></div> <div style="margin-top: 50px;" data-svelte-h="svelte-8ovfie"><h3>Logo</h3> <p>the GOAT logo shown on this website is borrowed from the open source Noto Emoji Font version
 		14.0</p> </div> 
 			
 			<script>
 				{
-					__sveltekit_dl0l4r = {
+					__sveltekit_cgr8t8 = {
 						base: new URL(".", location).pathname.slice(0, -1),
 						env: {}
 					};
@@ -82,8 +94,8 @@
 					const data = [null,null];
 
 					Promise.all([
-						import("./_app/immutable/entry/start.56a1c394.js"),
-						import("./_app/immutable/entry/app.1d56dfb4.js")
+						import("./_app/immutable/entry/start.008c3a23.js"),
+						import("./_app/immutable/entry/app.6f9145e1.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element, {
 							node_ids: [0, 3],

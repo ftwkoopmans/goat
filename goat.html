@@ -13,17 +13,18 @@
 	<meta name="theme-color" content="#ffffff">
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	
-		<link href="./_app/immutable/assets/5.6210c133.css" rel="stylesheet">
-		<link href="./_app/immutable/assets/app.0f494d5b.css" rel="stylesheet">
-		<link rel="modulepreload" href="./_app/immutable/entry/start.56a1c394.js">
+		<link href="./_app/immutable/assets/5.990194d5.css" rel="stylesheet">
+		<link href="./_app/immutable/assets/app.c6a029fe.css" rel="stylesheet">
+		<link rel="modulepreload" href="./_app/immutable/entry/start.008c3a23.js">
 		<link rel="modulepreload" href="./_app/immutable/chunks/scheduler.cd38125d.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.86e3d5b5.js">
-		<link rel="modulepreload" href="./_app/immutable/entry/app.1d56dfb4.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.86de3700.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/app.6f9145e1.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/preload-helper.a4192956.js">
 		<link rel="modulepreload" href="./_app/immutable/chunks/index.a6a2bf8f.js">
 		<link rel="modulepreload" href="./_app/immutable/nodes/0.1790fe3c.js">
-		<link rel="modulepreload" href="./_app/immutable/nodes/5.81b9f196.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/stores.5648d1db.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/stores.94ad381a.js"><title>GOAT: Geneset Ordinal Association Test - online geneset enrichment analyses</title><!-- HEAD_svelte-1hc78a4_START --><meta name="description" content="Geneset enrichment analysis for Geneset Ontology (GO) or KEGG pathways using the GOAT algorithm webtool. Online data analysis for your preranked genelist from e.g. proteomics or bulk/scRNAseq gene expression studies"><!-- HEAD_svelte-1hc78a4_END -->
+		<link rel="modulepreload" href="./_app/immutable/nodes/5.b8ce8349.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/stores.6e73a4c1.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/stores.3ed8a801.js"><title>GOAT: Geneset Ordinal Association Test - online geneset enrichment analyses</title><!-- HEAD_svelte-1hc78a4_START --><meta name="description" content="Geneset enrichment analysis for Geneset Ontology (GO) or KEGG pathways using the GOAT algorithm webtool. Online data analysis for your preranked genelist from e.g. proteomics or bulk/scRNAseq gene expression studies"><!-- HEAD_svelte-1hc78a4_END -->
 </head>
 
 <body data-sveltekit-preload-data="hover">
@@ -37,20 +38,21 @@
 								<a href="/docs" target="_blank" tabindex="-1">documentation</a>.
 
 								<div style="margin-top: 20px;"> <button class="hrefUIaction" style="font-weight:700" >click here to load example genelist.</button>
-									Instead of preparing and uploading your own genelist, you can immediately try out this
-									tool using an example genelist from
-									<a href="https://pubmed.ncbi.nlm.nih.gov/33492460/" target="_blank" rel="nofollow" tabindex="-1" data-svelte-h="svelte-163e9v8">Hondius et al. (2021)</a></div></div></td></tr></tbody></table></div></div> <div class="containerSettings"><div class="divH2" data-svelte-h="svelte-1clroec"><h2>Genesets</h2></div> <div class="divH3" data-svelte-h="svelte-avc7bi"><h3>Select the genesets that should be used for GOAT analyses.</h3></div> <div class="pnlSettings"><div><table><tbody><tr><td style="display: flex; width: 180px;"><button class="btn btn-outline-blue" style="margin-right: 5px;" >Gene Ontology</button> </td> <td data-svelte-h="svelte-mcho4g"> </td> <td class="helpSettings" data-svelte-h="svelte-fflmn8">load GO genesets (typical use of this tool)</td></tr> <tr><td style="display: flex; width: 180px;"><button class="btn btn-outline-blue" style="margin-right: 5px;" >SynGO</button> </td> <td data-svelte-h="svelte-mcho4g"> </td> <td class="helpSettings" data-svelte-h="svelte-142skxt">load genesets from the synaptic knowledgebase (SynGO)</td></tr> <tr><td style="display: flex; width: 180px;"><input id="genesetGMTFileDialog" type="file" accept=".gmt" multiple="false" style="display: none;"> <button class="btn btn-outline-blue" style="margin-right: 5px;" >upload GMT file</button> </td> <td data-svelte-h="svelte-mcho4g"> </td> <td class="helpSettings" data-svelte-h="svelte-1deotz4">load genesets prepared in the GMT file format (i.e. load a GMT file from your
-								computer)</td></tr></tbody></table></div> <div><br> <b data-svelte-h="svelte-jrlymk">status:</b> <br> <div class="alert" data-svelte-h="svelte-iyo4kz">no genesets loaded yet</div></div></div></div> <div class="containerSettings"><div class="divH2" data-svelte-h="svelte-1kt4qpn"><h2>GOAT analysis</h2></div> <div class="divH3" data-svelte-h="svelte-379imc"><h3>Settings &amp; apply algorithm.</h3></div> <div class="pnlSettings"><table><tbody><tr><td class="textRight" data-svelte-h="svelte-1sq98rj">gene score type:</td> <td><select></select></td> <td class="helpSettings">recommended to set to &quot;effectsize&quot;, if available in your genelist
+									Instead of preparing and uploading your own genelist, you can immediately try this
+									tool using an example genelist from a proteomics study on Alzheimer&#39;s disease by Wingo
+									et al. (download link and reference available through the documentation section)</div></div></td></tr></tbody></table></div></div> <div class="containerSettings"><div class="divH2" data-svelte-h="svelte-1clroec"><h2>Genesets</h2></div> <div class="divH3" data-svelte-h="svelte-avc7bi"><h3>Select the genesets that should be used for GOAT analyses.</h3></div> <div class="pnlSettings"><div><table><tbody><tr><td style="display: flex; width: 180px;"><button class="btn btn-outline-blue" style="margin-right: 5px;" >Gene Ontology</button> </td> <td data-svelte-h="svelte-mcho4g"> </td> <td class="helpSettings" data-svelte-h="svelte-fflmn8">load GO genesets (typical use of this tool)</td></tr> <tr><td style="display: flex; width: 180px;"><button class="btn btn-outline-blue" style="margin-right: 5px;" >SynGO</button> </td> <td data-svelte-h="svelte-mcho4g"> </td> <td class="helpSettings" data-svelte-h="svelte-142skxt">load genesets from the synaptic knowledgebase (SynGO)</td></tr> <tr><td style="display: flex; width: 180px;"><input id="genesetGMTFileDialog" type="file" accept=".gmt" multiple="false" style="display: none;"> <button class="btn btn-outline-blue" style="margin-right: 5px;" >upload GMT file</button> </td> <td data-svelte-h="svelte-mcho4g"> </td> <td class="helpSettings" data-svelte-h="svelte-1deotz4">load genesets prepared in the GMT file format (i.e. load a GMT file from your
+								computer)</td></tr></tbody></table></div> <div><br> <b data-svelte-h="svelte-jrlymk">status:</b> <br> <div class="alert" data-svelte-h="svelte-iyo4kz">no genesets loaded yet</div></div></div></div> <div class="containerSettings"><div class="divH2" data-svelte-h="svelte-1kt4qpn"><h2>GOAT analysis</h2></div> <div class="divH3" data-svelte-h="svelte-379imc"><h3>Settings &amp; apply algorithm.</h3></div> <div class="pnlSettings"><table><tbody><tr><td class="textRight" data-svelte-h="svelte-sanjpb">gene score type:</td> <td><select></select></td> <td class="helpSettings">recommended to set to &quot;effectsize&quot;, if available in your genelist
 							<br>(refer to the
 							<a href="/docs" target="_blank" tabindex="-1">Documentation</a>
-							for preparing your input data accordingly)</td></tr> <tr><td class="textRight" data-svelte-h="svelte-7lt6jw">geneset size, minimum:</td> <td><input class="inputNumber" value="10"></td> <td class="helpSettings" data-svelte-h="svelte-10995iv">must be at least 10, recommended to leave at default (10)</td></tr> <tr><td class="textRight" data-svelte-h="svelte-aoup1q">geneset size, maximum:</td> <td><input class="inputNumber" value="1500"></td> <td class="helpSettings" data-svelte-h="svelte-w663h2">threshold on geneset size, i.e. intersection of the input geneset and your genelist.
-							Typically set to 1500. The largest allowed geneset size is [50% of the
-							genelist], GOAT will automatically discard genesets larger than this.</td></tr> <tr><td class="textRight valign-top" data-svelte-h="svelte-1qa4fvu">p-value adjustment:</td> <td colspan="2"><div><input type="radio" id="padjBonferroni" name="radioPadjust" checked> <label for="padjBonferroni" data-svelte-h="svelte-3hf4fz">Bonferroni</label></div> <div><input type="radio" id="padjFDR" name="radioPadjust" > <label for="padjFDR" data-svelte-h="svelte-auc0r">FDR</label></div></td></tr> <tr><td class="textRight" data-svelte-h="svelte-i0758a">adj. p-value threshold:</td> <td><input class="inputNumber" value="0.05"></td> <td class="helpSettings" data-svelte-h="svelte-gag5uy">genesets with adjusted p-value ≤ this threshold are considered significant. Must be
-							a numeric value between 0 and 1</td></tr> <tr><td data-svelte-h="svelte-mcho4g"> </td> <td style="display: flex; width: 100px;"><button class="btn btn-action" style="margin-right: 5px;" disabled>START</button> </td> <td class="helpSettings"><div class="alert" data-svelte-h="svelte-1m62rtu">cannot start until the genelist and genesets are loaded</div></td></tr></tbody></table> </div></div>  </div> 
+							for preparing your input data accordingly)</td></tr> <tr><td class="textRight" data-svelte-h="svelte-7lt6jw">geneset size, minimum:</td> <td><input class="inputNumber" value="10"></td> <td class="helpSettings" data-svelte-h="svelte-10995iv">must be at least 10, recommended to leave at default (10)</td></tr> <tr><td class="textRight" data-svelte-h="svelte-aoup1q">geneset size, maximum:</td> <td><input class="inputNumber" value="1500"></td> <td class="helpSettings" data-svelte-h="svelte-1ol7e05">threshold on geneset size, i.e. intersection of the input geneset and your genelist.
+							Typically set to 1500, recommended to leave at default. The largest allowed geneset
+							size is [50% of the genelist], GOAT will automatically discard larger
+							genesets</td></tr> <tr><td class="textRight valign-top" data-svelte-h="svelte-1qa4fvu">p-value adjustment:</td> <td colspan="2"><div><input type="radio" id="padjBonferroni" name="radioPadjust" checked> <label for="padjBonferroni" data-svelte-h="svelte-3hf4fz">Bonferroni</label></div> <div><input type="radio" id="padjFDR" name="radioPadjust" > <label for="padjFDR" data-svelte-h="svelte-auc0r">FDR</label></div></td></tr> <tr><td class="textRight" data-svelte-h="svelte-i0758a">adj. p-value threshold:</td> <td><input class="inputNumber" value="0.05"></td> <td class="helpSettings" data-svelte-h="svelte-gag5uy">genesets with adjusted p-value ≤ this threshold are considered significant. Must be
+							a numeric value between 0 and 1</td></tr> <tr><td data-svelte-h="svelte-mcho4g"> </td> <td style="display: flex; width: 100px;"><button class="btn btn-action" style="margin-right: 5px;" disabled>START</button> </td> <td class="helpSettings"><div class="alert" data-svelte-h="svelte-1m62rtu">cannot start until the genelist and genesets are loaded</div></td></tr></tbody></table> </div></div> </div> <canvas id="mycanvas"></canvas> 
 			
 			<script>
 				{
-					__sveltekit_dl0l4r = {
+					__sveltekit_cgr8t8 = {
 						base: new URL(".", location).pathname.slice(0, -1),
 						env: {}
 					};
@@ -60,8 +62,8 @@
 					const data = [null,null];
 
 					Promise.all([
-						import("./_app/immutable/entry/start.56a1c394.js"),
-						import("./_app/immutable/entry/app.1d56dfb4.js")
+						import("./_app/immutable/entry/start.008c3a23.js"),
+						import("./_app/immutable/entry/app.6f9145e1.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element, {
 							node_ids: [0, 5],
