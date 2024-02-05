@@ -21,8 +21,8 @@ test_genesets_gsea = function(genesets, genelist, score_type = NULL, parallel_th
   pvalue = effectsize = id_tmp = genes = NULL # fix invisible bindings R package NOTE
   check_dependency("fgsea", "geneset enrichment testing with GSEA")
 
-  stopifnot("genesets parameter must be a non-empty data.frame/tibble with columns id (character type), genes (list type)" =
-              length(genesets) > 0 && is.data.frame(genesets) &&  all(c("id", "genes") %in% colnames(genesets)) &&
+  stopifnot("genesets parameter must be a non-empty data.frame/tibble with columns source (character type) id (character type), genes (list type)" =
+              is.data.frame(genesets) && nrow(genesets) > 0 && all(c("id", "genes") %in% colnames(genesets)) &&
               is.character(genesets$id) && is.list(genesets$genes))
   stopifnot("genelist parameter must be a non-empty data.frame/tibble with column gene (type should match the genes in 'genesets')" =
               length(genelist) > 0 && is.data.frame(genelist) && "gene" %in% colnames(genelist))
@@ -52,9 +52,9 @@ test_genesets_gsea = function(genesets, genelist, score_type = NULL, parallel_th
     suppressWarnings(fgsea::fgsea(
       pathways = stats::setNames(gs$genes, gs$id), # named geneset list
       stats    = array(gn$score, dimnames = list(gn$gene)), # named gene score array
-      scoreType = scoreType,
+      scoreType = gsea_scoretype,
       minSize  = 1L, # we already filtered genesets upstream
-      maxSize  = 10000L, # we already filtered genesets upstream
+      maxSize  = 100000L, # we already filtered genesets upstream
       nPermSimple = as.integer(nPermSimple), # Number of permutations in the simple fgsea implementation for preliminary estimation of P-values.  (defaults to 1000 in fGSEA v1.22.0 but here we overwrite this default)
       nproc = as.integer(parallel_threads),
       gseaParam = gseaParam
@@ -65,18 +65,16 @@ test_genesets_gsea = function(genesets, genelist, score_type = NULL, parallel_th
 
 
   # prepare data and parameters for fGSEA
-  scoreType = "pos"
   if(score_type == "pvalue") {
-    scoreType = "pos"
-    # even though fGSEA uses score ranks, it seems that using -log10 transformed values yields more significant terms in some tests. Doesn't hurt if they fix this later so we keep this instead as default
+    gsea_scoretype = "pos"
     genelist = genelist |> mutate(score = minlog10_fixzero(pvalue))
   }
   if(score_type == "effectsize") {
-    scoreType = "std"
+    gsea_scoretype = "std"
     genelist = genelist |> mutate(score = effectsize)
   }
   if(score_type == "custom") {
-    scoreType = gsea_scoretype
+    # use `gsea_scoretype` provided as function parameter
     genelist = genelist |> mutate(score = !!sym(gsea_genelist_col))
   }
 
@@ -89,8 +87,14 @@ test_genesets_gsea = function(genesets, genelist, score_type = NULL, parallel_th
   result = apply_fgsea(genesets |> select(id = id_tmp, genes), genelist)
   result$score_type = score_type
   if(score_type == "effectsize") {
-    result$score_type = c("effectsize_down", "effectsize_up")[1 + (result$gsea_nes > 0)] # if NES > 0, pathway is up-regulated
+    result$score_type = c("effectsize_down", "effectsize_up")[1 + (is.finite(result$gsea_nes) & result$gsea_nes > 0)] # if NES > 0, pathway is up-regulated
   }
+  # In this function we tested only valid, non-empty genesets that passed filter_genesets() upstream.
+  # If the geneset algorithm returned a non-finite pvalue, we consider it "tested but found not signif"
+  # (note that leaving NA values as-is would affect subsequent multiple testing correction, which in turn would be a
+  # source of bias if many  "no effect whatsoever" genesets are returned as NA pvalues by the algorithm)
+  result$pvalue[!is.finite(result$pvalue)] = 1
+  result$gsea_nes[!is.finite(result$gsea_nes)] = 0
 
   genesets |>
     select(-any_of(c("pvalue", "score_type", "gsea_nes"))) |> # remove result columns, if present, prior to left-joining results

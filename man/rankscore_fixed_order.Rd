@@ -2,7 +2,7 @@
 % Please edit documentation in R/util_stats.R
 \name{rankscore_fixed_order}
 \alias{rankscore_fixed_order}
-\title{mock data on same scale as \code{rankscore}}
+\title{Gene score array, from low to high scores}
 \usage{
 rankscore_fixed_order(n)
 }
@@ -10,5 +10,5 @@ rankscore_fixed_order(n)
 \item{n}{genelist length}
 }
 \description{
-mock data on same scale as \code{rankscore}
+Gene score array, from low to high scores
 }

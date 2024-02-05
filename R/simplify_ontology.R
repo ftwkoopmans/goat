@@ -162,7 +162,7 @@ nested_aggregate_child_stats = function(x, shortlist) {
       x$children[[i]] = nested_aggregate_child_stats(x$children[[i]], shortlist)
       x$recursiveChildren = c(x$recursiveChildren, x$children[[i]]$id, x$children[[i]]$recursiveChildren)
     }
-    x$recursiveChildren        = unique(x$recursiveChildren) # DAGs may yield duplicates
+    x$recursiveChildren        = unique(x$recursiveChildren) # dedupe; DAGs may yield duplicates
     x$recursiveChildren_length = length(x$recursiveChildren)
     x$recursiveChildrenShortlist        = intersect(x$recursiveChildren, shortlist)
     x$recursiveChildrenShortlist_length = length(x$recursiveChildrenShortlist)
@@ -197,6 +197,7 @@ nested_find_equivalent_child_recursive = function(x) {
 #' @param threshold stop if `obj$ngenes <= threshold`
 #' @param result list of resulting elements (when calling this function, use default empty list)
 nested_find_level1_children = function(obj, threshold, result = list()) {
+  # halt recursion when there are no children, or node has less than <threshold> genes
   if(length(obj$children) == 0 || obj$ngenes <= threshold) {
     result[[length(result) + 1]] = obj
     return(result)
@@ -328,7 +329,7 @@ build_treemap = function(ods, simplify = "none", toplevel_max_ngenes = Inf) {
   dag = nested_aggregate_child_stats(ods$dag_nested, shortlist)
 
   ## find level-1 elements to start with (possibly further down than direct children of root)
-  # start with the children of the root
+  # start with the children of the root; collect nearest children that have fewer than <threshold> genes
   obj_toplevel = list()
   for(child_level1 in dag$children) {
     for(tmp in nested_find_level1_children(obj = child_level1, threshold = toplevel_max_ngenes)) {
@@ -342,7 +343,7 @@ build_treemap = function(ods, simplify = "none", toplevel_max_ngenes = Inf) {
   ## collapse children of level-1 elements (either from tree structure or from greedy aggregation starting at largest element)
   treemap_data = list()
   shortlist_done = NULL
-  # greedy aggregation, start with level-1 term that has most leafs
+  # greedy aggregation, start with level-1 term that has most genes
   for(obj in obj_toplevel) {
     i_shortlist = i_root = NULL
     # current term already covered
@@ -359,6 +360,7 @@ build_treemap = function(ods, simplify = "none", toplevel_max_ngenes = Inf) {
       }
       i_shortlist = setdiff(i_shortlist, shortlist_done) # skip already done
     } else {
+      # current term is not on the shortlist
       # find most-specific child that covers the same number of leafs
       i_shortlist = setdiff(obj$recursiveChildrenShortlist, shortlist_done) # skip already done
       if(length(i_shortlist) > 0) {

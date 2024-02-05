@@ -1,8 +1,13 @@
 
 library(ggplot2)
-devtools::load_all() # to reproduce this code on non-development system, replace with library(goat)
+library(goat)
+# output_dir = "C:/temp"
+# file_gene2go = "C:/VU/projects/Frank - GOAT (2022)/genesets/gene2go_2024-01-01.gz"
+# file_goobo = "C:/VU/projects/Frank - GOAT (2022)/genesets/go_2024-01-01.obo"
+output_dir = "."
+file_gene2go = "gene2go_2024-01-01.gz"
+file_goobo = "go_2024-01-01.obo"
 goat_print_version()
-output_dir = "C:/temp"  # change the output folder where plots will be stored to whatever directory on your computer (note the use of forward slashes)
 
 
 
@@ -40,11 +45,7 @@ benchmark_bin_results = function(x) {
 
 
 # setup input data; GO genesets  &  real-world dataset that is to be tested against randomized genesets
-genesets = load_genesets_go_fromfile(
-  file_gene2go = "C:/VU/projects/Frank - GOAT (2022)/genesets/gene2go_2023-11-01.gz",
-  file_goobo = "C:/VU/projects/Frank - GOAT (2022)/genesets/go_2023-11-01.obo"
-)
-# genesets = load_genesets_go_bioconductor() # the version of GO loaded here is determined by your Bioconductor installation
+genesets = load_genesets_go_fromfile(file_gene2go, file_goobo)
 
 # setup input data; we'll sample from a real-world genelist
 data(goat_example_datasets)
@@ -58,7 +59,6 @@ idseq = 1L:200000L # 200k geneset permutations
 set.seed(123)
 
 tib_plot_all = NULL
-# for(genelist_size in c(100L, 500L, 1000L, 5000L)) {
 for(genelist_size in c(250L, 1000L, 4000L, 12000L)) {
   stopifnot(genelist_size < nrow(genelist))
 
@@ -71,7 +71,6 @@ for(genelist_size in c(250L, 1000L, 4000L, 12000L)) {
 
   # generate many random genesets of size k
   genesets_mock = NULL
-  # for(mock_size in c(10L, 20L, 30L, 40L, 50L, 100L, 200L, 1000L)) {
   for(mock_size in c(10L, 20L, 50L, 100L, 200L, 1000L)) {
     # limit geneset sizes to at most half the genelist length (larger = go next)
     if(mock_size * 2 > genelist_size) {
@@ -184,30 +183,29 @@ if(!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
 save(tib_plot_all, file = paste0(output_dir, "/bootstrap_genesets.rda"), compress = TRUE)
 # load("C:/VU/projects/Frank - GOAT (2022)/manuscript/figures_v2_post-bugfix/bootstrap_genesets.rda")
 
-# Figure 2: GOAT pvalue, GOAT effectsize, GSEA 1kiter pvalue, GSEA 1kiter effectsize, GSEA 50kiter pvalue, GSEA 50kiter effectsize
+# GOAT pvalue, GOAT effectsize, GSEA 1kiter pvalue, GSEA 1kiter effectsize, GSEA 50kiter pvalue, GSEA 50kiter effectsize
 plot_names = c("GOAT p-value", "GOAT effectsize", "GSEA p-value\nniter=1000", "GSEA effectsize\nniter=1000", "GSEA p-value\nniter=50000", "GSEA effectsize\nniter=50000")
 p = myplot(tib_plot_all |> filter(method_name %in% plot_names) |> arrange(match(method_name, plot_names)) )
 p = p + facet_grid(vars(genelist_size_label), vars(method_label))
 print(p)
 ggsave(p, file = paste0(output_dir, "/bootstrap_geneset_bins__figure2.pdf"), width = 6.5, height = 5)
 
-# Figure S3: all GOAT score types
+# all GOAT score types
 p = myplot(tib_plot_all |> filter(grepl("GOAT", method_name)) )
 print(p)
 ggsave(p, file = paste0(output_dir, "/bootstrap_geneset_bins__GOAT-all-scoretypes.pdf"), width = 10, height = 10)
 
-# Figure S4: GSEA 1k/10k/50k iter compared
+# GSEA 1k/10k/50k iter compared
 p = myplot(tib_plot_all |> filter(grepl("GSEA", method_name)) )
 print(p)
 ggsave(p, file = paste0(output_dir, "/bootstrap_geneset_bins__GSEA-compare-niter.pdf"), width = 10, height = 10)
 
-# Figure for website
-p = myplot(tib_plot_all |> filter(method_name == "GOAT p-value")) +
-  facet_wrap(method_label ~ genelist_size_label, nrow = 1)
-svglite::svglite(filename = "C:/temp/null_simulations.svg", width = 8, height = 3)
-print(p)
+# p = myplot(tib_plot_all |> filter(method_name == "GOAT p-value")) +
+#   facet_wrap(method_label ~ genelist_size_label, nrow = 1)
+# svglite::svglite(filename = "C:/temp/null_simulations.svg", width = 8, height = 3)
+# print(p)
 
-# Figure with only GOAT p-value and effectsize
+# only GOAT p-value and effectsize
 p = myplot(tib_plot_all |> filter(method_name == "GOAT p-value" | method_name == "GOAT effectsize")) +
   facet_wrap(method_label ~ genelist_size_label, nrow = 2)
 print(p)

@@ -32,7 +32,7 @@ rankscore = function(x, sort1, sort2, sort3, colname) {
 
 
 
-#' mock data on same scale as `rankscore`
+#' Gene score array, from low to high scores
 #'
 #' @param n genelist length
 rankscore_fixed_order = function(n) {

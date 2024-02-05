@@ -1,7 +1,7 @@
 Package: goat
 Type: Package
 Title: Geneset Ordinal Association Test (GOAT)
-Version: 0.9.4
+Version: 0.9.5
 Authors@R: 
     person(given = "Frank",
            family = "Koopmans",
@@ -15,7 +15,7 @@ License: Apache License (>= 2)
 Depends: 
     R (>= 4.1.0),
     dplyr (>= 1.0.3)
-Imports:
+Imports: 
     tibble (>= 3.0.0),
     tidyselect (>= 1.2.0),
     tidyr (>= 1.1.2),
@@ -34,11 +34,15 @@ Imports:
     AnnotationDbi,
     GO.db,
     org.Hs.eg.db
-Suggests:
+Suggests: 
     fgsea,
+    iDEA,
+    future (>= 1.21.0),
+    future.apply (>= 1.9.0),
     testthat (>= 3.0.0)
 Remotes: 
-    github::ctlab/fgsea
+    github::ctlab/fgsea,
+    github::xzhoulab/iDEA
 BiocViews:
 LinkingTo: Rcpp
 Encoding: UTF-8

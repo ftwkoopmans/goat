@@ -20,7 +20,7 @@ test_genesets(
 
 \item{genelist}{tibble with genes, must contain column 'gene' and 'test'. gene = character column, which are matched against list column 'genes' in genesets tibble. test = boolean column (you can set all to FALSE if not performing Fisher-exact or hypergeometric test downstream)}
 
-\item{method}{method for overrepresentation analysis. Options: "goat", "hypergeometric", "fisherexact", "fisherexact_ease", "gsea"}
+\item{method}{method for overrepresentation analysis. Options: "goat", "hypergeometric", "fisherexact", "fisherexact_ease", "gsea", "idea"}
 
 \item{padj_method}{first step of multiple testing correction; method for p-value adjustment, passed to \code{stats::p.adjust()} via \code{padjust_genesets()}, e.g. set "BH" to compute FDR adjusted p-values (default) or "bonferroni" for a more stringent procedure}
 

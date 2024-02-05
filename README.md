@@ -52,9 +52,10 @@ R version 4.1.0 (or higher) and toolchains for compilation are required. Suggest
   - add R package repository to your /etc/apt/sources.list file (per instructions in above link)
   - `sudo apt-get update`
   - `sudo apt-get install r-base r-base-dev libcurl4-openssl-dev openssl-dev libxml2-dev libgmp-dev libglpk-dev libfontconfig1-dev libfreetype6-dev libgmp3-dev`
-    - note the addition of `r-base-dev` 
+    - if your system reports "Unable to locate package openssl-dev", replace `libssl-dev` with `libssl-dev`
 - (optional) install RStudio and then `install.packages("rstudioapi")`
 - (if prompted, install packages into a personal library)
+- install the R.utils package; start R (`R` on commandline), then `install.packages('R.utils')`
 
 if some of the above dependencies in Fedora/Ubuntu are missing, you may encounter issues such as;
 
@@ -69,13 +70,23 @@ Execute the following R commands in a new RStudio session (i.e. close RStudio if
 install.packages("pak") # first, install the package manager that we'll use to install GOAT in the next step
 pak::pkg_install("ftwkoopmans/goat", upgrade = FALSE) # latter parameter makes us skip optional updates
 
-# optionally, only if you want to make use of fGSEA via the GOAT R package
-pak::pkg_install("ctlab/fgsea", upgrade = FALSE)
+# optionally, only if you want to make use of fGSEA or iDEA via the GOAT R package, install optional dependencies
+pak::pkg_install("ftwkoopmans/goat", upgrade = FALSE, dependencies = TRUE)
 ```
 
 potential issues;
 
 - if `pak::pkg_install("ftwkoopmans/goat", upgrade = FALSE)` yields error like `! Failed to build source package goat` then (most likely) the toolchain for compilation is missing. Follow above instructions for Windows/MacOS/Linux
+
+
+## Upgrading the R package
+
+Assuming you previously installed the R package (per above instructions), you can update to the latest version using the following R command;
+
+```
+pak::pkg_install("ftwkoopmans/goat", upgrade = FALSE) # latter parameter makes us skip optional updates
+```
+
 
 
 ## Quickstart
@@ -128,11 +139,13 @@ cat("output files are available at:", getwd(), "\n")
 
 ## Preparing your genelist as input for GOAT
 
+Gene identifiers used as input in the GOAT R package are Human NCBI Entrez gene IDs (other species currently not supported).
+
 **specification**
 
 The expected format for your genelist is a data.frame (or 'tibble') that contains the following named columns;
 
-- `gene` = required column with gene integer values (Human Entrez gene IDs is almost all cases)
+- `gene` = required column with gene integer values (Human Entrez gene IDs)
 - `symbol` = optional column with gene symbols that will be merged into the output tables
 - `signif` = required column with logical (boolean) values that indicate which genes are foreground (TRUE) and background (FALSE). While not used in the GOAT algorithm, this is used by some general-purpose functions that e.g. prepare output tables
 - `pvalue` required if you are using GOAT with `score_type='pvalue'` ; a column with finite numeric values
