@@ -1,7 +1,7 @@
 Package: goat
 Type: Package
 Title: Geneset Ordinal Association Test (GOAT)
-Version: 0.9.5
+Version: 0.9.6
 Authors@R: 
     person(given = "Frank",
            family = "Koopmans",

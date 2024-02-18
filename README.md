@@ -130,8 +130,9 @@ print(result |> group_by(source) |> summarise(signif_count = sum(signif), .group
 # this also includes M&M text that you can use in your publications.
 save_genesets(result, genelist, filename = "goat.xlsx")
 
-# generate lollipop charts for each GO domain (CC/BP/MF)
-plot_lollipop(result, output_dir = getwd(), topn = 50)
+# generate lollipop charts for each GO domain (CC/BP/MF), with geneset -log10 adjusted p-value on the x-axis and color-coding by geneset up/down-regulation
+# refer to the function documentation for alternative plot options (e.g. color-code by oddsratio on x-axis or create a barplot instead of a lollipop chart)
+plot_lollipop(result, output_dir = getwd(), topn = 50, plot_type = "lollipop", score_xaxis = "minlogp", score_color = "updown")
 
 cat("output files are available at:", getwd(), "\n")
 ```
@@ -244,7 +245,8 @@ print(result |> filter(signif_and_reduced) |> count(source))
 # generate heatmaps for each GO domain (CC/BP/MF). Again, don't forget to change the output directory to an existing directory on your computer and use forward slashes in the file path
 plot_heatmap(clusters, output_dir = getwd())
 # repeat the lollipop plots made before, but now only for geneset that remain after simplification. See the function documentation for tweaking the plot, e.g. plotting only a subset of genesets/results
-plot_lollipop(result, output_dir = getwd(), only_reduced = TRUE)
+plot_lollipop(result, output_dir = getwd(), only_reduced = TRUE, plot_type = "lollipop", score_xaxis = "minlogp", score_color = "updown")
+
 
 cat("output files are available at:", getwd(), "\n")
 ```
