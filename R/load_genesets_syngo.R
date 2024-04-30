@@ -6,12 +6,11 @@
 #' - click "bulk download SynGO release ..." for SynGO release of interest
 #' - unzip
 #' - call this function with the full file path to the 'syngo_ontologies.xlsx' file
-#' @examples \dontrun{
-#'   genesets_asis = load_genesets_syngo(
-#'     "C:/DATA/SynGO_bulk_download_release_20210225/syngo_ontologies.xlsx"
-#'   )
-#' }
-#' @param filename input file for this function should be the full path name for "syngo_ontologies.xlsx" from a SynGO bulk download
+#' @examples
+#'   # TODO: update the filename to your downloaded file
+#'   f = "C:/DATA/SynGO_bulk_download_release_20210225/syngo_ontologies.xlsx"
+#'   if(file.exists(f)) genesets_asis = load_genesets_syngo(f)
+#' @param filename full path to the "syngo_ontologies.xlsx" file that was extracted from a SynGO bulk download ZIP archive
 #' @param gene_database gene IDs to return. must be any of; "entrez" (default), "hgnc", "ensembl"
 #' @return table with columns; source (character), source_version (character), id (character), name (character), genes (list), ngenes (int)
 #' @export
@@ -66,7 +65,7 @@ load_genesets_syngo = function(filename, gene_database = "entrez") {
   }
 
   result = result |> # no duplicate goterm*gene entries (there should be none in SynGO, but enforce in code anyway)
-    distinct(go_id, genes, .keep_all = T) |>
+    distinct(go_id, genes, .keep_all = TRUE) |>
     arrange(genes) |>
     tidyr::chop(genes) |>
     mutate(source = paste0("SYNGO_", go_domain),

@@ -13,6 +13,9 @@ string_trunc_right(string, width, trim_left = FALSE)
 
 \item{trim_left}{instead of right trunc (default), do left instead}
 }
+\value{
+truncated variant of input \code{string}
+}
 \description{
 replacement for stringr::trunc() so we don't need a package dependency for just 1 function (our code was adapter therefrom)
 }

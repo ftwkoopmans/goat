@@ -11,9 +11,9 @@ load_genesets_go_fromfile(
 )
 }
 \arguments{
-\item{file_gene2go}{gene2go file from NCBI. Also works with the gzipped file gene2go.gz}
+\item{file_gene2go}{full path to the gene2go file from NCBI. Also works with the gzipped file gene2go.gz}
 
-\item{file_goobo}{OBO file from geneontology.org}
+\item{file_goobo}{full path to the OBO file from geneontology.org}
 
 \item{include_child_annotations}{boolean; include annotations against child terms? In most situations, TRUE (default) is the desired setting}
 }
@@ -21,14 +21,29 @@ load_genesets_go_fromfile(
 table with columns; source (character), source_version (character), id (character), name (character), genes (list), ngenes (int)
 }
 \description{
+This function is used to load Gene Ontology (GO) genesets from files that you
+manually downloaded from the links below. This enables the use of the latest data
+from GO (in contrast,  Bioconductor GO data may lag behind current data considerably).
+To construct genesets from available raw data, download the "gene2go" file
+(the gene annotations) from below NCBI link and download the GO OBO
+(ontology terms and relations to respective parent/child terms)  from below
+geneontology.org link. Provide the full path to the downloaded file to this function.
+Both "gzipped" and "uncompressed" files are supported.
+
+We encourage you to rename the files after your downloaded them such that
+the date of download in incorporated; this ensures you can always keep track of
+the GO database version that was used! For example, rename the downloaded
+"gene2go.gz" file to "gene2go_2024-01-31.gz".
+
 Download link for gene2go file; https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz
+
 Download link for gene ontology OBO file; http://current.geneontology.org/ontology/go.obo
 }
 \examples{
-\dontrun{
-  genesets_asis = load_genesets_go_fromfile(
-    file_gene2go = "C:/DATA/download_2024-01-01/gene2go",
-    file_goobo = "C:/DATA/download_2024-01-01/go.obo"
-  )
-}
+  # TODO: update the filenames to your downloaded files
+  file_gene2go = "C:/DATA/gene2go_2024-01-01.gz"
+  file_goobo = "C:/DATA/go_2024-01-01.obo"
+  if(file.exists(file_gene2go) && file.exists(file_goobo)) {
+    genesets_asis = load_genesets_go_fromfile(file_gene2go, file_goobo)
+  }
 }

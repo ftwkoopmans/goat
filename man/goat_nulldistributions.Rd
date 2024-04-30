@@ -7,13 +7,13 @@
 \format{
 \subsection{\code{goat_nulldistributions}}{
 
-precomputed null distribution parameters, used by goat to efficiently perform geneset testing without bootstrapping
+a data.frame with precomputed GOAT null distribution parameters
 }
 }
 \usage{
 goat_nulldistributions
 }
 \description{
-Precomputed parameters used by the GOAT algorithm
+there parameters are used by goat to efficiently perform geneset testing without bootstrapping
 }
 \keyword{datasets}

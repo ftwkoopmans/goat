@@ -10,7 +10,8 @@ plot_network(
   show_clusters = TRUE,
   show_text = FALSE,
   topn_edges = 5,
-  clr_default = "#29b6f6"
+  clr_default = "#29b6f6",
+  node_color_palette = goat::gg_color_hue
 )
 }
 \arguments{
@@ -25,6 +26,11 @@ plot_network(
 \item{topn_edges}{topN edges to retain per geneset (typically 5~8)}
 
 \item{clr_default}{default color for the network, used only when \code{show_clusters} is set to \code{FALSE}}
+
+\item{node_color_palette}{function with 1 parameter, N, that returns N colors (default is goat function \code{gg_color_hue})}
+}
+\value{
+a ggplot2 object
 }
 \description{
 plot geneset distance matrix as a network

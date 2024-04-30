@@ -14,6 +14,7 @@
 #' @param signifgenes_fraction the minimum fraction of "foreground genes" ('genes_signif' column) found across all significant genesets that should be covered by the reduced geneset collection.
 #' This parameter doesn't do anything if there are fewer than 5 "foreground genes" alltogether.
 #' Typical settings for this parameter are 0.75~0.95 (0.9 is default)
+#' @return the genesets table from the `clusters` parameter, with results in column "signif_and_reduced"
 #' @export
 reduce_genesets = function(clusters, simscore_threshold = 0.9, universe_fraction = 0.25, signifgenes_fraction = 0.9) {
   ngenes_signif = genes_signif = rescue_count = ngenes = rescue_score = ngenes_input = NULL # fix invisible bindings R package NOTE
@@ -82,6 +83,7 @@ reduce_genesets = function(clusters, simscore_threshold = 0.9, universe_fraction
 #' @param x results from `test_genesets()`
 #' @param genelist should be the same as provided to `test_genesets()`
 #' @param hclust_method hierarchical clustering method, any of; 'ward.D', 'ward.D2' (default), 'single', 'complete', 'average'
+#' @return a list with elements genesets (param `x`), similarity, hc_row, hc_col
 #' @export
 cluster_genesets = function(x, genelist, hclust_method = "ward.D2") {
   x = validate_genesets(x)
@@ -148,11 +150,12 @@ cluster_genesets = function(x, genelist, hclust_method = "ward.D2") {
 #' utility function that converts a genesets table into a sparse gene*geneset identity matrix
 #'
 #' @param genesets genesets tibble. Must contain columns; "id", "genes", "ngenes"
+#' @noRd
 genesets_as_matrix = function(genesets) {
   stopifnot(c("id", "genes", "ngenes") %in% colnames(genesets))
   # unlist the geneset table (row = geneset, genes are packed in a list column)
   ul_id = rep(genesets$id, genesets$ngenes)
-  ul_gene = unlist(genesets$genes, recursive = F, use.names = F)
+  ul_gene = unlist(genesets$genes, recursive = FALSE, use.names = FALSE)
   # ul_score = genelist$score_pval[match(ul_gene, genelist$gene)]  # this strategy is much slower on huge datasets
   # tmp = aggregate(ul_score, by = list(ul_id), FUN=sum)             # this strategy is much slower on huge datasets
   ugene = unique(ul_gene)
@@ -174,6 +177,7 @@ genesets_as_matrix = function(genesets) {
 #' @param genelist_geneid same identifiers as `mat_row_geneid`
 #' @param genelist_scores a matrix where columns are various gene score types
 #' @param weighted boolean value
+#' @noRd
 geneset_similarity_matrix = function(mat, mat_row_geneid, mat_col_gsid, genelist_geneid, genelist_scores, weighted = TRUE) {
 
   ### 1) find the score for each row in the gene*geneset matrix via lookup in the genelist table
@@ -214,28 +218,49 @@ geneset_similarity_matrix = function(mat, mat_row_geneid, mat_col_gsid, genelist
 
 #' plot the geneset similarity matrix as a heatmap
 #'
-#' @examples \dontrun{
-#'   # try various color palettes
-#'   plot_heatmap(plot_heatmapclusters, heatmap_colors = hcl.colors(100, "Viridis", rev = F))
-#'   plot_heatmap(plot_heatmapclusters, heatmap_colors = hcl.colors(100, "Inferno", rev = F))
-#'   plot_heatmap(plot_heatmapclusters, heatmap_colors = hcl.colors(100, "Lajolla", rev = T))
-#'   plot_heatmap(plot_heatmapclusters, heatmap_colors = hcl.colors(100, "Mako", rev = F))
-#'   plot_heatmap(plot_heatmapclusters, heatmap_colors = hcl.colors(100, "Turku", rev = T))
-#'   plot_heatmap(plot_heatmapclusters, heatmap_colors = hcl.colors(100, "Grays", rev = T))
+#' @examples \donttest{
+#' # note; this example downloads data when first run, and typically takes ~60seconds
+#'
+#' # store the downloaded files in the following directory. Here, the temporary file
+#' # directory is used. Alternatively, consider storing this data in a more permanent location.
+#' # e.g. output_dir="~/data/goat" on unix systems or output_dir="C:/data/goat" on Windows
+#' output_dir = tempdir()
+#'
+#' ## first run the default example from test_genesets() to obtain geneset results
+#' datasets = download_goat_manuscript_data(output_dir)
+#' genelist = datasets$`Wingo 2020:mass-spec:PMID32424284`
+#' genesets_asis = download_genesets_goatrepo(output_dir)
+#' genesets_filtered = filter_genesets(genesets_asis, genelist)
+#' result = test_genesets(genesets_filtered, genelist, method = "goat",
+#'   score_type = "effectsize", padj_method = "bonferroni", padj_cutoff = 0.05)
+#'
+#' # prior to running this function, cluster the genesets
+#' clusters = cluster_genesets(result, genelist)
+#'
+#' # use the plot heatmap function and try various color palettes
+#' plot_heatmap(clusters, output_dir, colors = hcl.colors(100, "Viridis", rev = FALSE))
+#' plot_heatmap(clusters, output_dir, colors = hcl.colors(100, "Inferno", rev = FALSE))
+#' plot_heatmap(clusters, output_dir, colors = hcl.colors(100, "Lajolla", rev = TRUE))
+#' plot_heatmap(clusters, output_dir, colors = hcl.colors(100, "Mako", rev = FALSE))
+#' plot_heatmap(clusters, output_dir, colors = hcl.colors(100, "Turku", rev = TRUE))
+#' plot_heatmap(clusters, output_dir, colors = hcl.colors(100, "Grays", rev = TRUE))
 #' }
 #' @param x result from `cluster_genesets()`
-#' @param output_dir full path to output directory. Set to NA to directly show the figures instead of writing them to file
-#' @param heatmap_colors a vector of 100 colors to be used for the heatmap (101 breaks are computed between 0 and the max value in the distance matrix)
+#' @param output_dir set to NA to directly show the figures instead of writing them to file.
+#' Otherwise, this is the full path to the directory where the downloaded files should be stored. Directory is created if it does not exist.
+#' e.g. `output_dir="~/data"` on unix systems, `output_dir="C:/data"` on Windows, or set to `output_dir=getwd()` to write output to the current working directory
+#' @param colors a vector of 100 colors to be used for the heatmap (101 breaks are computed between 0 and the max value in the distance matrix)
 #' @param fontsize parameter sent to pheatmap::pheatmap(); control the size of labels in the plot, defaults to 10. Note that you can also change the plot device size, see examples
+#' @return does not return a value, plots are printed to device or files depending on `output_dir` parameter
 #' @export
-plot_heatmap = function(x, output_dir = NA, heatmap_colors = grDevices::hcl.colors(100, "Viridis", rev = F), fontsize = 10) {
+plot_heatmap = function(x, output_dir, colors = grDevices::hcl.colors(100, "Viridis", rev = FALSE), fontsize = 10) {
   check_dependency("pheatmap", "plotting heatmaps")
   stopifnot("parameter output_dir must be a full path for the output files, this directory must already exists" =
               length(output_dir) == 1 && (is.na(output_dir) || (is.character(output_dir) && nchar(output_dir) > 4 && dir.exists(output_dir)) ) )
-  stopifnot("heatmap_colors parameter must be a vector of 100 html color-codes" = length(heatmap_colors) == 100 && is.character(heatmap_colors) && all(grepl("^#[0-9a-zA-Z]{6}$", heatmap_colors)))
+  stopifnot("colors parameter must be a vector of 100 html color-codes" = length(colors) == 100 && is.character(colors) && all(grepl("^#[0-9a-zA-Z]{6}$", colors)))
   stopifnot("fontsize parameter must be a positive number" = length(fontsize) == 1 && is.numeric(fontsize) && is.finite(fontsize) && fontsize > 0)
   if(length(x) == 0 || !is.list(x) || !"similarity" %in% names(x) || length(names(x$similarity)) == 0) {
-    cat("empty data provided to heatmap plot function\n")
+    warning("empty data provided to heatmap plot function")
     return()
   }
   stopifnot("parameter x must be a result from the cluster_genesets() function; cannot find a geneset table" =
@@ -295,7 +320,7 @@ plot_heatmap = function(x, output_dir = NA, heatmap_colors = grDevices::hcl.colo
     mat_ngenes_breaks = pretty(c(min(c(10, mat_ngenes)), max(c(mat_ngenes, 50))), n = 8)
     nbreaks = length(mat_ngenes_breaks)
     mat_ngenes_colors = stats::setNames(
-      grDevices::hcl.colors(nbreaks - 1, palette = "Grays", rev = T),
+      grDevices::hcl.colors(nbreaks - 1, palette = "Grays", rev = TRUE),
       mat_ngenes_breaks[-1]
     )
     # bin / color index (goes to nbreaks-1 max)
@@ -307,7 +332,7 @@ plot_heatmap = function(x, output_dir = NA, heatmap_colors = grDevices::hcl.colo
     annot_row = data.frame(
       `gene count` = mat_ngenes_breaks[mat_ngenes_binned],
       row.names = rownames(hm_data),
-      check.names = F
+      check.names = FALSE
     )
     annot_clr = list(
       `gene count` = mat_ngenes_colors
@@ -343,7 +368,7 @@ plot_heatmap = function(x, output_dir = NA, heatmap_colors = grDevices::hcl.colo
       annotation_colors = annot_clr,
       annotation_legend = TRUE,
       breaks = heatmap_breaks,
-      color = heatmap_colors,
+      color = colors,
       cellwidth = 10,
       cellheight = 10,
       filename = f,
@@ -365,30 +390,47 @@ plot_heatmap = function(x, output_dir = NA, heatmap_colors = grDevices::hcl.colo
 
 #' Lollipop chart or barplot visualization of geneset enrichment testing results
 #'
-#' @examples \dontrun{
-#'   # generate lollipop charts for each GO domain (CC/BP/MF), with geneset -log10
-#'   # adjusted p-value on the x-axis and color-coding by geneset up/down-regulation
-#'   plot_lollipop(
-#'     result, output_dir = getwd(), plot_type = "lollipop", topn = 50,
-#'     score_xaxis = "minlogp", score_color = "updown"
-#'   )
+#' @examples \donttest{
+#' # note; this example downloads data when first run, and typically takes ~60seconds
 #'
-#'   # alternatively, as a barplot
-#'   plot_lollipop(
-#'     result, output_dir = getwd(), plot_type = "barplot", topn = 50,
-#'     score_xaxis = "minlogp", score_color = "updown"
-#'   )
+#' # store the downloaded files in the following directory. Here, the temporary file
+#' # directory is used. Alternatively, consider storing this data in a more permanent location.
+#' # e.g. output_dir="~/data/go" on unix systems or output_dir="C:/data/go" on Windows
+#' output_dir = tempdir()
 #'
-#'   # alternatively, color-code genesets by enrichment of significant genes using
-#'   # parameter `score_color="oddsratio"` . See further `score_geneset_oddsratio`
-#'   # function documentation for definition/computation of this score.
-#'   plot_lollipop(
-#'     result, output_dir = getwd(), plot_type = "lollipop", topn = 50,
-#'     score_xaxis = "minlogp", score_color = "oddsratio"
-#'   )
+#' ## first run the default example from test_genesets() to obtain geneset results
+#' datasets = download_goat_manuscript_data(output_dir)
+#' genelist = datasets$`Wingo 2020:mass-spec:PMID32424284`
+#' genesets_asis = download_genesets_goatrepo(output_dir)
+#' genesets_filtered = filter_genesets(genesets_asis, genelist)
+#' result = test_genesets(genesets_filtered, genelist, method = "goat",
+#'   score_type = "effectsize", padj_method = "bonferroni", padj_cutoff = 0.05)
+#'
+#' # generate lollipop charts for each GO domain (CC/BP/MF), with geneset -log10
+#' # adjusted p-value on the x-axis and color-coding by geneset up/down-regulation
+#' plot_lollipop(
+#'   result, output_dir, plot_type = "lollipop", topn = 50,
+#'   score_xaxis = "minlogp", score_color = "updown"
+#' )
+#'
+#' # alternatively, as a barplot
+#' plot_lollipop(
+#'   result, output_dir, plot_type = "barplot", topn = 50,
+#'   score_xaxis = "minlogp", score_color = "updown"
+#' )
+#'
+#' # alternatively, color-code genesets by enrichment of significant genes using
+#' # parameter `score_color="oddsratio"` . See further `score_geneset_oddsratio`
+#' # function documentation for definition/computation of this score.
+#' plot_lollipop(
+#'   result, output_dir, plot_type = "lollipop", topn = 50,
+#'   score_xaxis = "minlogp", score_color = "oddsratio"
+#' )
 #' }
 #' @param x results from function `test_genesets`
-#' @param output_dir full path to output directory. Set to NA to directly show the figures instead of writing them to file
+#' @param output_dir set to NA to directly show the figures instead of writing them to file.
+#' Otherwise, this is the full path to the directory where the downloaded files should be stored. Directory is created if it does not exist.
+#' e.g. `output_dir="~/data"` on unix systems, `output_dir="C:/data"` on Windows, or set to `output_dir=getwd()` to write output to the current working directory
 #' @param only_reduced only show the reduced/summarized set of significant genesets. This requires that you first applied the `reduce_genesets` function
 #' @param plot_type Options: "barplot", "lollipop" (default)
 #' @param show_pvalue boolean parameter that indicates whether adjusted p-values should be shown next to each data point
@@ -405,8 +447,9 @@ plot_heatmap = function(x, output_dir = NA, heatmap_colors = grDevices::hcl.colo
 #' @param max_ngenes only plot terms with less than N genes (quick way to get rid of large/unspecific terms)
 #' @param topn topn terms to show after sorting genesets by p-value. For example, this makes it easy to plot the top10 GO terms. Set to NA to ignore this filter (default)
 #' @param padj_cutoff adjusted pvalue cutoff for terms shown in the plot. If set to NA (default), all significant genesets are used (i.e. 'signif' column in the input geneset table)
+#' @return if `output_dir` is `NA`, a list of ggplot2 objects. Otherwise, write plots to file and do not return any value
 #' @export
-plot_lollipop = function(x, output_dir = NA, only_reduced = FALSE, plot_type = "lollipop", show_pvalue = FALSE, score_xaxis = "minlogp", score_color = ifelse(is.data.frame(x) && "score_type" %in% colnames(x) && is.character(x$score_type) && any(x$score_type %in% c("effectsize_up","effectsize_down")), "updown", "minlogp"), score_color_limits = "source", score_color_updown = c("#E57373", "#5E7ABC"), max_ngenes = NA, topn = NA, padj_cutoff = NA) {
+plot_lollipop = function(x, output_dir, only_reduced = FALSE, plot_type = "lollipop", show_pvalue = FALSE, score_xaxis = "minlogp", score_color = ifelse(is.data.frame(x) && "score_type" %in% colnames(x) && is.character(x$score_type) && any(x$score_type %in% c("effectsize_up","effectsize_down")), "updown", "minlogp"), score_color_limits = "source", score_color_updown = c("#E57373", "#5E7ABC"), max_ngenes = NA, topn = NA, padj_cutoff = NA) {
   signif_and_reduced = ngenes = pvalue_adjust = pvalue = rank__ = name = score_oddsratio = score_clr = xvalue = clrvalue = NULL # fix invisible bindings R package NOTE
   check_dependency("ggplot2", "plot lollipop chart")
   x = validate_genesets(x)
@@ -432,7 +475,7 @@ plot_lollipop = function(x, output_dir = NA, only_reduced = FALSE, plot_type = "
   if(score_color == "updown") {
     stopifnot("parameter score_color was set to 'updown' so we expect column 'score_type' in the provided data table AND it should contain 'effectsize_up' and/or 'effectsize_down' values (i.e. when using GOAT with parameter score_type='effectsize')" = "score_type" %in% colnames(x) && all(is.character(x$score_type)) )
     if(!any(x$score_type %in% c("effectsize_up","effectsize_down"))) {
-      cat("*** warning: parameter score_color was set to 'updown' but we did not find any 'effectsize_up' or 'effectsize_down' values in column 'score_type' and thus all elements will be color-coded in grey (NA). Try another color-coding, or use GOAT with parameter score_type='effectsize'\n")
+      warning("parameter score_color was set to 'updown' but we did not find any 'effectsize_up' or 'effectsize_down' values in column 'score_type' and thus all elements will be color-coded in grey (NA). Try another color-coding, or use GOAT with parameter score_type='effectsize'")
     }
   }
   if(only_reduced) {
@@ -462,7 +505,7 @@ plot_lollipop = function(x, output_dir = NA, only_reduced = FALSE, plot_type = "
 
   # return if there is no data to plot
   if(nrow(x) == 0) {
-    cat("zero genesets match your filtering criteria, cannot generate plots\n")
+    warning("zero genesets match your filtering criteria, cannot generate plots")
     return()
   }
 
@@ -509,7 +552,7 @@ plot_lollipop = function(x, output_dir = NA, only_reduced = FALSE, plot_type = "
     # data subset for figure @ current source
     x_src = x |> filter(source == src)
     if(nrow(x_src) > 100) {
-      cat(src, "has more than 100 significant genesets, not creating plot. You can run this function and explicitly request to plot only the topn genesets, see documentation for 'topn' parameter\n")
+      warning(paste(src, "has more than 100 significant genesets, not creating plot. You can run this function and explicitly request to plot only the topn genesets, see documentation for 'topn' parameter"))
       next
     }
 
@@ -618,7 +661,6 @@ plot_lollipop = function(x, output_dir = NA, only_reduced = FALSE, plot_type = "
       )
       if(plot_type == "lollipop") {
         p = p + ggplot2::theme(legend.justification = c(1, 0.5))
-        print("test align")
       }
     }
 
@@ -664,15 +706,20 @@ plot_lollipop = function(x, output_dir = NA, only_reduced = FALSE, plot_type = "
 
 #' plot geneset distance matrix as a network
 #'
+#'
 #' @param clusters result from `cluster_genesets`
 #' @param src source property (e.g. "GO_CC")
 #' @param show_clusters boolean value
 #' @param show_text boolean value
 #' @param topn_edges topN edges to retain per geneset (typically 5~8)
 #' @param clr_default default color for the network, used only when `show_clusters` is set to `FALSE`
+#' @param node_color_palette function with 1 parameter, N, that returns N colors (default is goat function `gg_color_hue`)
+#' @return a ggplot2 object
 #' @export
-plot_network = function(clusters, src, show_clusters = TRUE, show_text = FALSE, topn_edges = 5, clr_default = "#29b6f6") {
+plot_network = function(clusters, src, show_clusters = TRUE, show_text = FALSE, topn_edges = 5, clr_default = "#29b6f6", node_color_palette = goat::gg_color_hue) {
   source = cl = weight = genecount = cluster = label = NULL
+  check_dependency("igraph", "creating network plots")
+  check_dependency("ggraph", "creating network plots")
   ## input validation
   # TODO
 
@@ -685,7 +732,7 @@ plot_network = function(clusters, src, show_clusters = TRUE, show_text = FALSE, 
   ## from matrix to edgelist
   el = NULL
   for(i in 1:nrow(mat)) {
-    i_cols = utils::head(order(mat[i,], decreasing = T), topn_edges)
+    i_cols = utils::head(order(mat[i,], decreasing = TRUE), topn_edges)
     el = bind_rows(el, data.frame(from = rownames(mat)[i], to = colnames(mat)[i_cols], weight = mat[i,i_cols]) )
   }
   el = el |> filter(weight > 0.1)
@@ -698,7 +745,6 @@ plot_network = function(clusters, src, show_clusters = TRUE, show_text = FALSE, 
   igraph::V(g)$label = clusters$genesets$name[match(igraph::V(g)$name, clusters$genesets$id)]
 
   ## layout
-  set.seed(123)
   gl = igraph::layout_with_graphopt(g, charge = 0.05, spring.constant = 10)
   # gl = igraph::layout_with_fr(g, niter = 1000)
 
@@ -711,22 +757,26 @@ plot_network = function(clusters, src, show_clusters = TRUE, show_text = FALSE, 
 
   ## color
   df_clusters = data.frame(cl = unique(igraph::V(g)$cluster)) |> arrange(cl)
-  df_clusters$clr = gg_color_hue(nrow(df_clusters))
-  df_clusters$fill = lighten_color(df_clusters$clr, 0.25)
+  df_clusters$clr = df_clusters$fill = node_color_palette(nrow(df_clusters))
+  df_clusters$fill = lighten_color(df_clusters$fill, 0.1)
+  df_clusters$clr = darken_color(df_clusters$clr, 0.1)
+  # df_clusters$clr = node_color_palette(nrow(df_clusters))
+  # df_clusters$fill = lighten_color(df_clusters$clr, 0.25)
+
 
   p = ggraph::ggraph(g, layout = gl) +
     ggraph::geom_edge_link0(ggplot2::aes(width = I(0.5 + weight / 10),
-                                         colour = I(grDevices::colorRampPalette(c("#ECEFF1", "#CFD8DC"))(10)[ cut(weight, breaks = (0:10)/10, include.lowest = T, labels=F) ]) ),
-                            show.legend = F)
+                                         colour = I(grDevices::colorRampPalette(c("#ECEFF1", "#CFD8DC"))(10)[ cut(weight, breaks = (0:10)/10, include.lowest = TRUE, labels = FALSE) ]) ),
+                            show.legend = FALSE)
 
   if(show_clusters) {
     if(show_text) {
-      p = p + ggraph::geom_node_point(ggplot2::aes(size = genecount, colour = I(df_clusters$fill[cluster])), show.legend = F)
+      p = p + ggraph::geom_node_point(ggplot2::aes(size = genecount, colour = I(df_clusters$fill[cluster])), show.legend = FALSE)
     } else {
-      p = p + ggraph::geom_node_point(ggplot2::aes(size = genecount, colour = I(df_clusters$clr[cluster]), fill = I(df_clusters$fill[cluster])), shape = 21, show.legend = F)
+      p = p + ggraph::geom_node_point(ggplot2::aes(size = genecount, colour = I(df_clusters$clr[cluster]), fill = I(df_clusters$fill[cluster])), shape = 21, show.legend = FALSE)
     }
   } else {
-    p = p + ggraph::geom_node_point(ggplot2::aes(size = genecount), colour = clr_default, show.legend = F)
+    p = p + ggraph::geom_node_point(ggplot2::aes(size = genecount), colour = clr_default, show.legend = FALSE)
   }
 
   p = p +

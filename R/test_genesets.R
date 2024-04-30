@@ -9,6 +9,33 @@
 #'
 #' Note that this is more rigorous than typical GO tools; hypothetically, one could split all GO_CC pathways into 1000 different databases/'sources' and then run enrichment testing. Consequently, the multiple testing burden is reduced if one doesn't adjust p-values for the number of 'sources' as we do here.
 #'
+#' @examples \donttest{
+#'#' # note; this example downloads data when first run, and typically takes ~60seconds
+#'
+#' ## Basic example for a complete GOAT workflow
+#' # Downloads test data to your computer and stores it at current working directory
+#' # Refer to the GitHub documentation for elaborate documentation and a worked example
+#'
+#' # store the downloaded files in the following directory. Here, the temporary file
+#' # directory is used. Alternatively, consider storing this data in a more permanent location.
+#' # e.g. output_dir="~/data/go" on unix systems or output_dir="C:/data/go" on Windows
+#' output_dir = tempdir()
+#'
+#' # download an example gene list
+#' datasets = download_goat_manuscript_data(output_dir)
+#' genelist = datasets$`Wingo 2020:mass-spec:PMID32424284`
+#'
+#' # download GO genesets
+#' genesets_asis = download_genesets_goatrepo(output_dir)
+#'
+#' # filter genesets for sufficient overlap with the genelist, then apply GOAT
+#' genesets_filtered = filter_genesets(genesets_asis, genelist)
+#' result = test_genesets(genesets_filtered, genelist, method = "goat",
+#'   score_type = "effectsize", padj_method = "bonferroni", padj_cutoff = 0.05)
+#'
+#' # print first 10 rows of the result table
+#' print(result |> select(source, name, ngenes, pvalue_adjust) |> utils::head(n=10))
+#' }
 #' @param genesets tibble with genesets, must contain columns 'source', 'source_version', 'id', 'name', 'genes', 'ngenes', 'ngenes_signif'
 #' @param genelist tibble with genes, must contain column 'gene' and 'test'. gene = character column, which are matched against list column 'genes' in genesets tibble. test = boolean column (you can set all to FALSE if not performing Fisher-exact or hypergeometric test downstream)
 #' @param method method for overrepresentation analysis. Options: "goat", "hypergeometric", "fisherexact", "fisherexact_ease", "gsea", "idea"
@@ -46,7 +73,7 @@ test_genesets = function(genesets, genelist, method, padj_method = "BH", padj_so
     result = test_genesets_fisherexact(genesets, genelist, ...)
   }
   if(method == "fisherexact_ease") {
-    result = test_genesets_fisherexact(genesets, genelist, use_ease = T, ...)
+    result = test_genesets_fisherexact(genesets, genelist, use_ease = TRUE, ...)
   }
   if(method == "hypergeometric") {
     result = test_genesets_hypergeometric(genesets, genelist, ...)
@@ -54,26 +81,23 @@ test_genesets = function(genesets, genelist, method, padj_method = "BH", padj_so
   if(method == "gsea") {
     result = test_genesets_gsea(genesets, genelist, ...)
   }
-  if(method == "idea") {
-    result = test_genesets_idea(genesets, genelist, ...)
-  }
 
-  # # fallthrough; guess if the user provided some custom function
-  # if(is.null(result)) {
-  #   f = tryCatch(match.fun(method, descend = FALSE), error = function(...) NULL)
-  #   if(!is.function(f)) {
-  #     if(grepl("::", method, fixed = T)) {
-  #       f = tryCatch(utils::getFromNamespace(gsub(".*::", "", method), gsub("::.*", "", method), envir = .GlobalEnv), error = function(...) NULL)
-  #     } else {
-  #       f = tryCatch(utils::getFromNamespace(algorithm, "goat", envir = .GlobalEnv), error = function(...) NULL)
-  #     }
-  #   }
-  #   if(is.function(f)) {
-  #     result = f(genesets = genesets, genelist = genelist, ...)
-  #     stopifnot("custom geneset-test-function should return the input 'genesets' table with an additional 'pvalue' numeric column included" =
-  #                 is.data.frame(result) && "pvalue" %in% colnames(result) && is.numeric(result$pvalue))
-  #   }
-  # }
+  # fallthrough; guess if the user provided some custom function
+  if(is.null(result)) {
+    f = tryCatch(match.fun(method, descend = FALSE), error = function(...) NULL)
+    if(!is.function(f)) {
+      if(grepl("::", method, fixed = TRUE)) {
+        f = tryCatch(utils::getFromNamespace(gsub(".*::", "", method), gsub("::.*", "", method), envir = .GlobalEnv), error = function(...) NULL)
+      } else {
+        f = tryCatch(utils::getFromNamespace(algorithm, "goat", envir = .GlobalEnv), error = function(...) NULL)
+      }
+    }
+    if(is.function(f)) {
+      result = f(genesets = genesets, genelist = genelist, ...)
+      stopifnot("custom geneset-test-function should return the input 'genesets' table with an additional 'pvalue' numeric column included" =
+                  is.data.frame(result) && "pvalue" %in% colnames(result) && is.numeric(result$pvalue))
+    }
+  }
 
 
   # fallthrough check for valid method parameter

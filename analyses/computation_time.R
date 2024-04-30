@@ -1,13 +1,13 @@
 
+require(parallel)
 library(ggplot2)
 library(goat) # also loads dplyr
-# output_dir = "C:/temp"
-# file_gene2go = "C:/VU/projects/Frank - GOAT (2022)/genesets/gene2go_2024-01-01.gz"
-# file_goobo = "C:/VU/projects/Frank - GOAT (2022)/genesets/go_2024-01-01.obo"
-output_dir = "."
-file_gene2go = "gene2go_2024-01-01.gz"
-file_goobo = "go_2024-01-01.obo"
-goat_print_version()
+
+# TODO: setup input/output paths
+output_dir = getwd() # directory where output files should be stored
+file_gene2go = "gene2go_2024-01-01.gz" # full path to NCBI gene2go file, e.g. previously downloaded from https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz
+file_goobo = "go_2024-01-01.obo" # full path go GO OBO file, e.g. previously downloaded from http://current.geneontology.org/ontology/go.obo
+source("test_genesets_idea.R") # load the script that implements the iDEA function; update to the full path
 
 
 ### parameters
@@ -17,6 +17,17 @@ include_idea = TRUE
 nthread = ifelse(tolower(.Platform$OS.type) == "windows", 1L, as.integer(min(24, max(1, parallel::detectCores() - 1))) )
 cat(nthread, "thread(s) for fGSEA\n")
 
+
+goat_print_version()
+
+
+
+
+
+
+
+
+########################################################################################################################
 
 # helper function that times how many seconds a parameter function takes to evaluate (discards the respective function's result)
 mytime = function(f) {
@@ -54,7 +65,7 @@ for(sim_geneset_count in c(500, 1000, 2000, 4000, 6000)) {
 
   tmp_time_idea = NA
   if(include_idea) {
-    tmp_time_idea = mytime(function(){test_genesets(iter_genesets, iter_genelist, method = "idea", return_pvalue_louis = TRUE)})
+    tmp_time_idea = mytime(function(){test_genesets(iter_genesets, iter_genelist, method = "test_genesets_idea", return_pvalue_louis = TRUE)})
   }
 
   # perform geneset enrichment tests and keep track of computation time
@@ -80,13 +91,13 @@ for(sim_geneset_count in c(500, 1000, 2000, 4000, 6000)) {
 # hardcoded color-codings
 lbl = c(
   goat_pvalue                 = "GOAT p-value - precomputed",
-  goat_effectsize             = "GOAT effectsize - precomputed",
+  goat_effectsize             = "GOAT effect size - precomputed",
   goat_fitfunction_pvalue     = "GOAT p-value - full algorithm",
-  goat_fitfunction_effectsize = "GOAT effectsize - full algorithm",
+  goat_fitfunction_effectsize = "GOAT effect size - full algorithm",
   gsea_pvalue_10k             = "GSEA p-value - 10000 iterations",
-  gsea_effectsize_10k         = "GSEA effectsize - 10000 iterations",
+  gsea_effectsize_10k         = "GSEA effect size - 10000 iterations",
   gsea_pvalue_50k             = "GSEA p-value - 50000 iterations",
-  gsea_effectsize_50k         = "GSEA effectsize - 50000 iterations",
+  gsea_effectsize_50k         = "GSEA effect size - 50000 iterations",
   idea                        = "iDEA"#,
   # hypergeometric              = "hypergeometric test"
 )
@@ -100,7 +111,7 @@ clr = c(
   gsea_effectsize_10k         = "#A83CFA",
   gsea_pvalue_50k             = "#42a5f5",
   gsea_effectsize_50k         = "#304ffe",
-  idea                        = "#8d6e63"#,
+  idea                        = "#C99D8E"#,
   # hypergeometric              = "#69f0ae"
 )
 
@@ -116,10 +127,11 @@ tib_plot = result |>
   )
 
 
-myplot = function(x, p) {
+myplot = function(x) {
+  stopifnot(x$label %in% names(lbl))
   clr_values = setNames(clr, lbl)
   clr_values = clr_values[names(clr_values) %in% x$label]
-  ggplot(x, aes(geneset_count, time, colour = label, fill = label, shape = I(ifelse(grepl("effectsize",label), 25, ifelse(grepl("p-value",label), 24, 16))) )) +
+  ggplot(x, aes(geneset_count, time, colour = label, fill = label, shape = I(ifelse(grepl("effect.{0,1}size",label), 25, ifelse(grepl("p.{0,1}value",label), 24, 16))) )) +
     geom_point(size = 2.5) +
     geom_line(size = 0.75) +
     ylim(c(0, max(x$time))) +

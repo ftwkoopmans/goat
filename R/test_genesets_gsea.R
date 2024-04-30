@@ -11,15 +11,20 @@
 #' Option "custom" expects 2 additional parameters; `gsea_genelist_col` should be a column name in `genelist` to be used for fGSEA (values used as-is), `gsea_scoretype` should be the respective value for the fGSEA scoreType parameter ('pos', 'neg' or 'std)
 #' @param parallel_threads number of threads to use for parallel processing. Set to 0 to automatically select all available processors/cores, set to 1 to disable (default) or to N to use N processes.
 #' Note that multiprocessing sometimes breaks on RStudio + Windows, hence this parameter is set to 1 to disable multiprocessing by default for now
-#' @param gseaParam passed to `fgsea::fgsea()`, from manual: "GSEA parameter value, all gene-level statis are raised to the power of 'gseaParam' before calculation of GSEA enrichment scores.". default = 1
+#' @param gseaParam passed to `fgsea::fgsea()`, from manual: "GSEA parameter value, all gene-level statis are raised to the power of 'gseaParam' before calculation of GSEA enrichment scores.". default = 1. Further comments by fGSEA author at https://github.com/ctlab/fgsea/issues/45
 #' @param nPermSimple passed to `fgsea::fgsea()`, from manual: "Number of permutations in the simple fgsea implementation for preliminary estimation of P-values.". default = 50000 in this R package but 1000 by default in fGSEA v1.22.0; we observed much better accuracy in null simulations when increasing this from default 1k to 10k and further minor improvement towards 50k, hence the latter is our default
 #' @param gsea_genelist_col optional, only used for `score_type` "custom"
 #' @param gsea_scoretype optional, only used for `score_type` "custom"
+#' @param random_seed the random seed that is passed to `set.seed()` in order to ensure fgsea results are reproducible. default: 123
+#' @return input `genesets` table with results in the "pvalue", "score_type" and "gsea_nes" columns
 #' @seealso `test_genesets`
 #' @export
-test_genesets_gsea = function(genesets, genelist, score_type = NULL, parallel_threads = 1L, gseaParam = 1, nPermSimple = 50000, gsea_genelist_col = NULL, gsea_scoretype = NULL) {
+test_genesets_gsea = function(genesets, genelist, score_type = NULL, parallel_threads = 1L, gseaParam = 1, nPermSimple = 50000, gsea_genelist_col = NULL, gsea_scoretype = NULL, random_seed = 123) {
   pvalue = effectsize = id_tmp = genes = NULL # fix invisible bindings R package NOTE
-  check_dependency("fgsea", "geneset enrichment testing with GSEA")
+
+  if(!requireNamespace("fgsea", quietly = TRUE)) {
+    stop('to perform geneset testing with the GSEA algorithm, the fgsea R package is required (c.f. documentation on the GOAT GitHub page).\nSuggested installation steps;\n1) close RStudio and start it anew (do copy/paste these instructions before closing)\n2) run R command: install.packages("pak")\n3) run R command: pak::pkg_install("ctlab/fgsea", update=FALSE)\n4) test if the installation was successful by loading the R package, run R command: library(fgsea)', call. = FALSE)
+  }
 
   stopifnot("genesets parameter must be a non-empty data.frame/tibble with columns source (character type) id (character type), genes (list type)" =
               is.data.frame(genesets) && nrow(genesets) > 0 && all(c("id", "genes") %in% colnames(genesets)) &&
@@ -47,8 +52,15 @@ test_genesets_gsea = function(genesets, genelist, score_type = NULL, parallel_th
   # local helper function
   apply_fgsea = function(gs, gn) {
     pathway = pval = NES = NULL # fix invisible bindings R package NOTE
-    # always set.seed prior to fgsea to enforce reproducibilty of our pipeline
-    set.seed(123)
+    # always set.seed prior to this function to enforce the exact same results (on the same computer and input data), regardless
+    # of the prior RNG state. Motivating example for this R package where reproducibility of statistical results is essential;
+    # Let function A and B both use sample() to draw random numbers.
+    # The results from bind_rows(A(), B()) and bind_rows(B(), A()) could be different.
+    # Thus, if we do not set.seed() here, every upstream use-case must include a set.seed() call before each function call.
+    # Such mistakes are easily made, especially by users to are relatively new to (R) programming, so we enforce it here
+    prev_seed <- .Random.seed
+    on.exit(.Random.seed <- prev_seed)
+    set.seed(random_seed)
     suppressWarnings(fgsea::fgsea(
       pathways = stats::setNames(gs$genes, gs$id), # named geneset list
       stats    = array(gn$score, dimnames = list(gn$gene)), # named gene score array

@@ -5,16 +5,11 @@
 #' Download and import genesets from the GO database using the Bioconductor infrastructure.
 #' Use the `goat::load_genesets_go_fromfile` function for more fine-grained control over the GO database version that you use; it allows you to import NCBI gene2go files
 #'
-#'
 #' @details
 #' Note that org.Hs.eg.db pulls data semi-annually from NCBI gene2go,
 #' but the GO database version returned by this function is tied to the version of the org.Hs.eg.db on your computer (this is controlled by the Bioconductor infrastructure).
 #'
 #' The actual GO database version that is retrieved is returned by this function in the `source_version` column.
-#'
-#' @examples \dontrun{
-#'   genesets_asis = load_genesets_go_bioconductor()
-#' }
 #' @param include_child_annotations boolean; include annotations against child terms? In most situations, TRUE (default) is the desired setting
 #' @return table with columns; source (character), source_version (character), id (character), name (character), genes (list), ngenes (int)
 #' @export
@@ -42,14 +37,14 @@ load_genesets_go_bioconductor = function(include_child_annotations = TRUE) {
   ### convert Bioconductor data into a table compatible with this R package
 
   result = tibble::tibble(go_id = rep(names(go_annotations_entrez), lengths(go_annotations_entrez)),
-                          genes = unlist(go_annotations_entrez, recursive = F, use.names = F)) |>
+                          genes = unlist(go_annotations_entrez, recursive = FALSE, use.names = FALSE)) |>
     # enforce entrez gene IDs to be integers by stripping non-numeric parts
     # (not strictly needed atm, just a safeguard against future upstream changes, e.g. prefixing entrez IDs with 'entrez:')
     mutate(genes = gsub("\\D+","", genes)) |>
     filter(genes != "") |>
     mutate(genes = as.integer(genes)) |>
     # remove duplicate goterm*genes entries, if any
-    distinct(go_id, genes, .keep_all = T) |>
+    distinct(go_id, genes, .keep_all = TRUE) |>
     # back to list format
     tidyr::chop(cols = genes) |>
     # add goterm metadata; name and domain
@@ -70,7 +65,7 @@ load_genesets_go_bioconductor = function(include_child_annotations = TRUE) {
     GOdata = as.list(GODBLINKS)
     # unlist the named vector per GO term into a long-format table
     links = dplyr::bind_rows(sapply(names(GOdata), function(n)
-      data.frame(child_id=n, parent_id=unname(GOdata[[n]]), relation=names(GOdata[[n]]), row.names = NULL), simplify = F, USE.NAMES = F))
+      data.frame(child_id=n, parent_id=unname(GOdata[[n]]), relation=names(GOdata[[n]]), row.names = NULL), simplify = FALSE, USE.NAMES = FALSE))
     links |>
       # remove unsupported relation types
       filter(relation %in% relation_accept) |>
@@ -100,6 +95,8 @@ load_genesets_go_bioconductor = function(include_child_annotations = TRUE) {
 
   attr(result, "settings") <- sprintf("load_genesets_go_bioconductor(include_child_annotations=%s) = '%s'",
                                       include_child_annotations, go_annotations_metadata)
+
+  message(paste("load_genesets_go_bioconductor(): data version =", go_annotations_metadata))
   return(result)
 }
 
@@ -107,17 +104,34 @@ load_genesets_go_bioconductor = function(include_child_annotations = TRUE) {
 
 #' construct a geneset table from gene2go and OBO files
 #'
+#' @description
+#' This function is used to load Gene Ontology (GO) genesets from files that you
+#' manually downloaded from the links below. This enables the use of the latest data
+#' from GO (in contrast,  Bioconductor GO data may lag behind current data considerably).
+#' To construct genesets from available raw data, download the "gene2go" file
+#' (the gene annotations) from below NCBI link and download the GO OBO
+#' (ontology terms and relations to respective parent/child terms)  from below
+#' geneontology.org link. Provide the full path to the downloaded file to this function.
+#' Both "gzipped" and "uncompressed" files are supported.
+#'
+#' We encourage you to rename the files after your downloaded them such that
+#' the date of download in incorporated; this ensures you can always keep track of
+#' the GO database version that was used! For example, rename the downloaded
+#' "gene2go.gz" file to "gene2go_2024-01-31.gz".
+#'
 #' Download link for gene2go file; https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz
+#'
 #' Download link for gene ontology OBO file; http://current.geneontology.org/ontology/go.obo
 #'
-#' @examples \dontrun{
-#'   genesets_asis = load_genesets_go_fromfile(
-#'     file_gene2go = "C:/DATA/download_2024-01-01/gene2go",
-#'     file_goobo = "C:/DATA/download_2024-01-01/go.obo"
-#'   )
-#' }
-#' @param file_gene2go gene2go file from NCBI. Also works with the gzipped file gene2go.gz
-#' @param file_goobo OBO file from geneontology.org
+#' @examples
+#'   # TODO: update the filenames to your downloaded files
+#'   file_gene2go = "C:/DATA/gene2go_2024-01-01.gz"
+#'   file_goobo = "C:/DATA/go_2024-01-01.obo"
+#'   if(file.exists(file_gene2go) && file.exists(file_goobo)) {
+#'     genesets_asis = load_genesets_go_fromfile(file_gene2go, file_goobo)
+#'   }
+#' @param file_gene2go full path to the gene2go file from NCBI. Also works with the gzipped file gene2go.gz
+#' @param file_goobo full path to the OBO file from geneontology.org
 #' @param include_child_annotations boolean; include annotations against child terms? In most situations, TRUE (default) is the desired setting
 #' @return table with columns; source (character), source_version (character), id (character), name (character), genes (list), ngenes (int)
 #' @export
@@ -181,10 +195,11 @@ load_genesets_go_fromfile = function(file_gene2go, file_goobo, include_child_ann
 
 #' parse gene2go file
 #'
-#' note that it lacks parent/child relations, so from this file we only learn 'direct annotations'
-#'
+#' @description note that this file lacks parent/child relations, so we only learn 'direct annotations'
 #' @param f full path to gene2go file stored on the computer, e.g. previously downloaded from https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz
 #' @param taxid_filter taxonomy id, integer
+#' @return a tibble with columns; source, source_version, id, name, genes, ngenes
+#' @export
 go_gene2go = function(f, taxid_filter = 9606) {
   taxid = qualifier = goid = goterm = geneid = category = genes = source_version = name = ngenes = NULL # fix invisible bindings R package NOTE
 
@@ -197,7 +212,7 @@ go_gene2go = function(f, taxid_filter = 9606) {
 
   gene2go |>
     # remove negative annotation. e.g. "NOT part_of" (do this after taxid filter for efficiency)
-    filter( ! grepl("^not ", qualifier, ignore.case = T)) |>
+    filter( ! grepl("^not ", qualifier, ignore.case = TRUE)) |>
     as_tibble() |>
     # retain only data we need & rename columns
     select(id = goid, name = goterm, genes = geneid, source = category) |>
@@ -226,6 +241,7 @@ go_gene2go = function(f, taxid_filter = 9606) {
 #'
 #' @param child array of GO term IDs that represent children
 #' @param parent array of GO term IDs that represent respective parents
+#' @noRd
 go_find_parents = function(child, parent) {
   newchild = NULL # fix invisible bindings R package NOTE
   stopifnot(length(child) > 0 & length(child) == length(parent) & !anyNA(child) & !anyNA(parent))
@@ -263,17 +279,21 @@ go_find_parents = function(child, parent) {
 
 #' simple vectorized parsing of GO OBO file without any dependencies (beyond dplyr/tibble/tidyr)
 #'
-#' note that we remove links between GO terms that are across GO domains (e.g. no CC to MF relations)
+#' @description note that we remove links between GO terms that are across GO domains (e.g. no CC to MF relations)
+#' The only supported relations are those that match this regex;
+#' `"^(is_a:|relationship: part_of|relationship: regulates|relationship: positively_regulates|relationship: negatively_regulates)"`
 #'
 #' @param f full path to go.obo file stored on the computer, e.g. previously downloaded from http://current.geneontology.org/ontology/go.obo
 #' @param rename_namespace boolean; rename official namespace values like 'cellular_component' to CC? (analogous for BP and MF)
 #' @param remove_obsolete boolean; remove obsoleted terms?
+#' @return tibble with ontology terms and their relations
+#' @export
 go_obo = function(f, rename_namespace = TRUE, remove_obsolete = TRUE) {
   group = lines = isterm = isid = isname = isdef = isnamespace = isobsolete = isrelationship = isparentlink = NULL # fix invisible bindings R package NOTE
   id = name = definition = namespace = obsolete = qc = parent_id = parent_namespace = parent = parent_id_recursive = NULL # fix invisible bindings R package NOTE
 
   go = tibble::tibble(
-    lines = readLines(f, warn = F),
+    lines = readLines(f, warn = FALSE),
     group = cumsum(as.integer(grepl("^\\[", lines))),
     isterm = lines == "[Term]",
     isid = grepl("^id:", lines),

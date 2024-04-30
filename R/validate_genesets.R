@@ -1,9 +1,10 @@
 
 #' validate that a geneset table is compatible with this R package
 #'
-#' @param genesets geneset tibble to validate, e.g. results from `load_genesets_go_bioconductor()`
+#' @param genesets geneset tibble to validate, e.g. results from `load_genesets_go_fromfile()`
 #' @param require_signif should we check for "ngenes_signif" column ?
 #' @param check_gene_identiers optionally skip the validation of gene identifiers
+#' @noRd
 validate_genesets = function(genesets, require_signif = TRUE, check_gene_identiers = TRUE) {
   # 1) data.frame with all required columns
   ok = is.data.frame(genesets) &&
@@ -54,7 +55,7 @@ validate_genesets = function(genesets, require_signif = TRUE, check_gene_identie
   if(check_gene_identiers) {
     x_aslist = utils::as.relistable(genesets$genes)
     # ignore warning about recursive unlisting; we validate below to enforce 'no recursive lists allowed'
-    x = unlist(genesets$genes, recursive = F, use.names = F)
+    x = unlist(genesets$genes, recursive = FALSE, use.names = FALSE)
     if(length(x) > 0) {
       ok = FALSE
       if(is.character(x)) {

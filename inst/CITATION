@@ -1,0 +1,8 @@
+bibentry(
+  bibtype="Article",
+  title="GOAT: efficient and robust identification of gene set enrichment",
+  author="Koopmans, F.",
+  journal="bioRxiv",
+  year="2024",
+  doi="10.1101/2023.12.10.570979"
+)

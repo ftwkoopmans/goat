@@ -9,6 +9,9 @@ rankscore_fixed_order(n)
 \arguments{
 \item{n}{genelist length}
 }
+\value{
+result of \code{(1:n)^2 / (n^2 / 1000)}
+}
 \description{
 Gene score array, from low to high scores
 }

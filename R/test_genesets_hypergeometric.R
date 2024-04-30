@@ -13,6 +13,7 @@
 #' is assumed to be the total number of tested genes, the number of rows where signif==TRUE is assumed the total number of significant genes.
 #' @param require_nsignif minimum number of 'signif genes' that overlap with a geneset; `NA` pvalues are returned for genesets with `ngenes_signif <= require_nsignif`.
 #' This function 'prefilters' genesets, so beware that this will influence downstream multiple testing correction. Default is 1
+#' @return input `genesets` table with results in the "pvalue" column
 #' @seealso `test_genesets`
 #' @export
 test_genesets_hypergeometric = function(genesets, genelist, require_nsignif = 1L) {

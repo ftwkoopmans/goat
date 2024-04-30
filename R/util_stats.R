@@ -9,15 +9,16 @@
 #' @param sort2 numeric vector of length `nrow(x)` to sort by for breaking ties (descending order, higher value gets better result score)
 #' @param sort3 numeric vector of length `nrow(x)` to sort by for breaking ties (descending order, higher value gets better result score)
 #' @param colname name for result column in `x`  (overwritten if already exists)
-#' @examples \dontrun{
-#'   x = data.frame(gene=c(1,2,3,4,5), pvalue=c(0.01, 1, 1, 0.1, 1),
+#' @examples
+#'   x = data.frame(gene=c(1, 2, 3, 4, 5),
+#'                  pvalue=c(0.01, 1, 1, 0.1, 1),
 #'                  effectsize=c(-2, 0.25, 0.5, 1, 0.25))
 #'   print(x, row.names = FALSE)
-#'   print(goat:::rankscore(x, sort1 = -1*x$pvalue, sort2 = abs(x$effectsize),
+#'   print(rankscore(x, sort1 = -1*x$pvalue, sort2 = abs(x$effectsize),
 #'         sort3 = x$gene, colname="score") |>
 #'     arrange(desc(score)), row.names = FALSE)
-#' }
 #' @return data.frame `x` with added column `colname`, containing gene scores between 0 and 1000
+#' @export
 rankscore = function(x, sort1, sort2, sort3, colname) {
   i = NULL
   if(is.null(sort3)) {
@@ -35,6 +36,8 @@ rankscore = function(x, sort1, sort2, sort3, colname) {
 #' Gene score array, from low to high scores
 #'
 #' @param n genelist length
+#' @return result of `(1:n)^2 / (n^2 / 1000)`
+#' @export
 rankscore_fixed_order = function(n) {
   (1:n)^2 / (n^2 / 1000) # compute scaling factor prior to application to rank^2 scores
 }
@@ -43,18 +46,18 @@ rankscore_fixed_order = function(n) {
 
 #' -log10 transform a vector of p-values, replacing zeros with some limit/threshold
 #'
-#' @examples \dontrun{
+#' @examples
 #'   pval = c(0, 10^-6, 0.001, 0.01, 1, NA, -Inf, Inf, NaN)
 #'   cbind(
 #'     input = pval,
 #'     # default; replace zeros with typical R machine precision for doubles
 #'     minlog10_default = minlog10_fixzero(pval),
 #'     # alternatively, replace zero with lowest non-zero pvalue in input
-#'     minlog10_limit_from_data minlog10_fixzero(pval, limit = NA)
+#'     minlog10_limit_from_data = minlog10_fixzero(pval, limit = NA)
 #'   )
-#' }
 #' @param x p-value vector to transform to -log10
 #' @param limit value to replace zero's in `x` with. Set NA to replace zero's in `x` with the smallest finite value in `x` (if there is none, defaults to 2.22e-16)
+#' @return input parameter `x` transformed to -log10
 #' @export
 minlog10_fixzero = function(x, limit = 2.22e-16) {
   stopifnot(length(limit) == 1 && (is.na(limit) || (is.numeric(limit) & is.finite(limit) & limit > 0)))
@@ -81,6 +84,7 @@ minlog10_fixzero = function(x, limit = 2.22e-16) {
 #' @param method method for multiple testing correction, must be any of `stats::p.adjust.methods`, e.g. "BH" or "bonferroni"
 #' @param cutoff numeric cutoff value for adjusted p-value, `signif` column is set to TRUE for all values lesser-equals
 #' @param correct_sources apply Bonferroni adjustment to all p-values according to the number of geneset sources that were tested. Boolean parameter, set TRUE to enable (default) or FALSE to disable
+#' @return updated `genesets` table
 #' @export
 padjust_genesets = function(genesets, method = "BH", cutoff = 0.01, correct_sources = TRUE) {
   pvalue = pvalue_adjust = NULL # fix invisible bindings R package NOTE
@@ -115,6 +119,7 @@ padjust_genesets = function(genesets, method = "BH", cutoff = 0.01, correct_sour
 #' @param mean location parameter
 #' @param sd scale parameter
 #' @param xi skewness parameter
+#' @noRd
 dsnorm = function(x, mean = 0, sd = 1, xi = 1) {
   dsnorm__std = function(x, xi) {
     if(length(xi) == 1) {
@@ -142,6 +147,7 @@ dsnorm = function(x, mean = 0, sd = 1, xi = 1) {
 #' @param mean location parameter
 #' @param sd scale parameter
 #' @param xi skewness parameter
+#' @noRd
 psnorm_upper_tail = function(q, mean = 0, sd = 1, xi = 1) {
   # vectorized over xi
   psnorm_upper_tail__std = function(q, xi) {
@@ -159,9 +165,9 @@ psnorm_upper_tail = function(q, mean = 0, sd = 1, xi = 1) {
     XI[!flag_up] = 1 / XI[!flag_up]
     p = z # init as numeric vector of expected length
     # high precision for small pvalues
-    p[flag_up] = g[flag_up] * XI[flag_up] * stats::pnorm(q = z[flag_up]/XI[flag_up], lower.tail = F)
+    p[flag_up] = g[flag_up] * XI[flag_up] * stats::pnorm(q = z[flag_up]/XI[flag_up], lower.tail = FALSE)
     # precision for large p-values is capped near 1 (approx 1 - 10^-16), but doesn't matter
-    p[!flag_up] = 1 - g[!flag_up] * XI[!flag_up] * stats::pnorm(q = z[!flag_up]/XI[!flag_up], lower.tail = T)
+    p[!flag_up] = 1 - g[!flag_up] * XI[!flag_up] * stats::pnorm(q = z[!flag_up]/XI[!flag_up], lower.tail = TRUE)
 
     p[p > 1] = 1
     return(p)
@@ -172,7 +178,7 @@ psnorm_upper_tail = function(q, mean = 0, sd = 1, xi = 1) {
   ### QC code
   # # validate precision; compare to pnorm @ xi = 1
   # q = seq(-12, 12, by = 0.1)
-  # stopifnot( all.equal(stats::pnorm(q, lower.tail = F), psnorm_upper_tail__std(q, xi = 1), tolerance = 10^-14) )
+  # stopifnot( all.equal(stats::pnorm(q, lower.tail = FALSE), psnorm_upper_tail__std(q, xi = 1), tolerance = 10^-14) )
   #
   # # validate correctness; compare to preexisting implementation
   # # here only using a limited range for q because reference lacks precision for large q (ours should be fine)
@@ -192,6 +198,7 @@ psnorm_upper_tail = function(q, mean = 0, sd = 1, xi = 1) {
 #' @param init_xi initial value for xi (typically 1~1.25)
 #' @param lower lower bound for Xi
 #' @param upper Upper bound for Xi
+#' @noRd
 fit_snorm_xi = function(x, mu, sd, init_xi, lower = NA, upper = NA) {
 
   ###### for reference; pure R variant (much slower than our Rcpp variant)

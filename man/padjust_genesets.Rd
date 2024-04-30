@@ -20,6 +20,9 @@ padjust_genesets(
 
 \item{correct_sources}{apply Bonferroni adjustment to all p-values according to the number of geneset sources that were tested. Boolean parameter, set TRUE to enable (default) or FALSE to disable}
 }
+\value{
+updated \code{genesets} table
+}
 \description{
 Adjust p-values for all genesets, grouped by 'source' then adjust for the number of 'sources'
 }

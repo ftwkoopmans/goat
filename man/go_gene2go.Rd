@@ -11,6 +11,9 @@ go_gene2go(f, taxid_filter = 9606)
 
 \item{taxid_filter}{taxonomy id, integer}
 }
+\value{
+a tibble with columns; source, source_version, id, name, genes, ngenes
+}
 \description{
-note that it lacks parent/child relations, so from this file we only learn 'direct annotations'
+note that this file lacks parent/child relations, so we only learn 'direct annotations'
 }

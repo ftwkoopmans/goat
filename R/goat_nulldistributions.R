@@ -1,7 +1,9 @@
 
 #' Wrapper function for goat_nulldistribution_function, typically used to generate the Rdata file with precomputed null distribution that is bundled with GOAT
 #'
-#' @examples \dontrun{
+#' @examples \donttest{
+#' # note that these example take a long time to compute
+#'
 #' # example 1; precompute parameters for a huge range of genesets, 500k permuations
 #' goat_nulldistribution_function_generator(
 #'   seq(from=100, to=20000, by=1), 500000, "C:/temp/", overwrite=TRUE, verbose=TRUE
@@ -13,16 +15,18 @@
 #' }
 #' @param all_geneset_sizes vector of geneset sizes; integer values larger than 10 and smaller than half the genelist length (gene_scores length)
 #' @param niter see `goat_nulldistribution_function`
-#' @param dir_output the path to an existing directory where temporary and result files will be stored
+#' @param output_dir full path to the directory where the downloaded files should be stored. Directory is created if it does not exist.
+#' e.g. `output_dir="~/data"` on unix systems, `output_dir="C:/data"` on Windows, or set to `output_dir=getwd()` to write output to the current working directory
 #' @param overwrite should existing files be overwritten? When setting this to FALSE, be mindful that you should manually clear cached files in between analyses !
 #' @param verbose see `goat_nulldistribution_function`
-goat_nulldistribution_function_generator = function(all_geneset_sizes, niter, dir_output, overwrite = TRUE, verbose = FALSE) {
+#' @noRd
+goat_nulldistribution_function_generator = function(all_geneset_sizes, niter, output_dir, overwrite = TRUE, verbose = FALSE) {
 
   geneset_size_bins = suppressWarnings(split(all_geneset_sizes, 1:min(100, length(all_geneset_sizes))))
 
   for(index_bin in seq_along(geneset_size_bins)) {
     start_time_bin = Sys.time()
-    file_bin = sprintf("%s/goat_null_functions_%d.rda", dir_output, index_bin)
+    file_bin = sprintf("%s/goat_null_functions_%d.rda", output_dir, index_bin)
     if(overwrite == FALSE && file.exists(file_bin)) {
       next
     }
@@ -33,26 +37,26 @@ goat_nulldistribution_function_generator = function(all_geneset_sizes, niter, di
       genelist_fit = goat_nulldistribution_function(genelist_N, niter = niter, return_fit_objects = FALSE, verbose = (verbose && (genelist_N %in% c(100,250,500,750,1000,1500,2500,5000,10000,15000,20000))) )
       result_genelists[[length(result_genelists) + 1]] = genelist_fit
       if(index_bin == 1) {
-        cat(sprintf("N:%s took %d seconds\n", genelist_N, ceiling(as.numeric(difftime(Sys.time(), start_time, units = "secs"))) ))
+        message(sprintf("N:%s took %d seconds", genelist_N, ceiling(as.numeric(difftime(Sys.time(), start_time, units = "secs"))) ))
       }
     }
 
     # store current batch to disk
     save(result_genelists, file = file_bin)
-    cat(sprintf("bin:%d took %.1f hours\n", index_bin, as.numeric(difftime(Sys.time(), start_time_bin, units = "hours")) ))
+    message(sprintf("bin:%d took %.1f hours", index_bin, as.numeric(difftime(Sys.time(), start_time_bin, units = "hours")) ))
   }
 
 
   # from cached Rdata files per 'bin' into 1 large data.frame
   alldata = list()
-  for(f in dir(dir_output, pattern = "^goat_null_functions_\\d+.rda$", full.names = TRUE)) {
+  for(f in dir(output_dir, pattern = "^goat_null_functions_\\d+.rda$", full.names = TRUE)) {
     load(f)
     alldata[[length(alldata) + 1]] = result_genelists
   }
   goat_nulldistributions = dplyr::bind_rows(alldata) |> mutate_all(unname)
 
   # store final result
-  save(goat_nulldistributions, file = paste0(dir_output, "/goat_null_alldata.rda"), compress = "xz", compression_level = 9)
+  save(goat_nulldistributions, file = paste0(output_dir, "/goat_null_alldata.rda"), compress = "xz", compression_level = 9)
 }
 
 
@@ -66,6 +70,7 @@ goat_nulldistribution_function_generator = function(all_geneset_sizes, niter, di
 #' @param niter number of bootstrap iterations that should be performed for generating empirical null distributions. Note that setting a large number will dramatically increase the RAM usage of this function! Integer value between 10000 and 5000000
 #' @param return_fit_objects should the 'fit' object, which can be used as input for `predict`, be included in results? boolean value, TRUE or FALSE, default; FALSE
 #' @param verbose should plots be created that describe the accuracy of fitting sd and xi? boolean value, TRUE or FALSE, default; FALSE
+#' @noRd
 goat_nulldistribution_function = function(genelist_N, niter = 500000, return_fit_objects = FALSE, verbose = FALSE) {
   validate_goat_niter(niter)
   validate_goat_verbose(verbose)
@@ -207,7 +212,8 @@ goat_nulldistribution_function = function(genelist_N, niter = 500000, return_fit
 #' @param gene_scores gene score vector; these values are assumed to be the 'universe' of all possible gene-level scores. These are used to compute geneset score null distributions
 #' @param niter number of bootstrap iterations that should be performed for generating empirical null distributions. Note that setting a large number will dramatically increase the RAM usage of this function! Integer value between 10000 and 5000000
 #' @param verbose boolean, plot 10 null distribution histograms augmented with fitted skew-normal distributions
-#' @returns data.frame with columns; genelist_N, size, mu, sigma, xi
+#' @return data.frame with columns; genelist_N, size, mu, sigma, xi
+#' @noRd
 goat_nulldistribution_independent = function(geneset_sizes, gene_scores, niter, verbose) {
   validate_goat_niter(niter)
   validate_goat_verbose(verbose)

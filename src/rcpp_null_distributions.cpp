@@ -20,8 +20,8 @@
 #include <omp.h>
 #endif
 
+// in previous versions we here added an additional Rcpp requirement for C++14, but this seems to be no longer needed
 // [[Rcpp::plugins(openmp)]]
-// [[Rcpp::plugins(cpp14)]]
 
 // [[Rcpp::export(rcpp_geneset_null)]]
 Rcpp::NumericVector rcpp_geneset_null(Rcpp::NumericVector gene_scores, Rcpp::IntegerVector geneset_sizes, int max_geneset_size, int niter)
@@ -29,15 +29,15 @@ Rcpp::NumericVector rcpp_geneset_null(Rcpp::NumericVector gene_scores, Rcpp::Int
   // note; we assume gene_scores have been rescaled upstream and are typically between 0 ~ 1000
 
   // basic input validation
-  if ((niter < 10000) | (niter > 5000000))
+  if ((niter < 10000) || (niter > 5000000))
   {
     Rcpp::stop("rcpp_geneset_null, failed precondition; 10000 <= niter <= 5000000");
   }
-  if ((max_geneset_size < 5) | (max_geneset_size > 50000))
+  if ((max_geneset_size < 5) || (max_geneset_size > 50000))
   {
     Rcpp::stop("rcpp_geneset_null, failed precondition; 5 <= max_geneset_size <= 50000");
   }
-  if ((gene_scores.size() == 0) | (gene_scores.size() > 50000))
+  if ((gene_scores.size() == 0) || (gene_scores.size() > 50000))
   {
     Rcpp::stop("rcpp_geneset_null, failed precondition; 0 < gene_scores.size() <= 50000");
   }
@@ -45,7 +45,7 @@ Rcpp::NumericVector rcpp_geneset_null(Rcpp::NumericVector gene_scores, Rcpp::Int
   {
     Rcpp::stop("rcpp_geneset_null, failed precondition; max_geneset_size < gene_scores.size()");
   }
-  if ((geneset_sizes.size() == 0) | (geneset_sizes.size() > 10000))
+  if ((geneset_sizes.size() == 0) || (geneset_sizes.size() > 10000))
   {
     Rcpp::stop("rcpp_geneset_null, failed precondition; 0 < geneset_sizes.size() <= 10000");
   }
@@ -170,7 +170,7 @@ private:
 
 
 
-//// TODO: finish this wrapper function for bootstrapping + fit distributions
+//// wrapper function for bootstrapping + fit distributions
 // [[Rcpp::export(rcpp_null_distributions)]]
 Rcpp::List rcpp_null_distributions(Rcpp::NumericVector gene_scores, Rcpp::IntegerVector geneset_sizes, int max_geneset_size, int niter)
 {

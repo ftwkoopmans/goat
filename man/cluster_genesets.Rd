@@ -13,6 +13,9 @@ cluster_genesets(x, genelist, hclust_method = "ward.D2")
 
 \item{hclust_method}{hierarchical clustering method, any of; 'ward.D', 'ward.D2' (default), 'single', 'complete', 'average'}
 }
+\value{
+a list with elements genesets (param \code{x}), similarity, hc_row, hc_col
+}
 \description{
 cluster significant genesets from \code{test_genesets()} by geneset similarity (separately for each 'geneset source')
 }

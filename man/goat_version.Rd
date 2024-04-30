@@ -6,6 +6,9 @@
 \usage{
 goat_version()
 }
+\value{
+package version as a string
+}
 \description{
 simple wrapper around utils::packageVersion()
 }

@@ -22,8 +22,3 @@ but the GO database version returned by this function is tied to the version of 
 
 The actual GO database version that is retrieved is returned by this function in the \code{source_version} column.
 }
-\examples{
-\dontrun{
-  genesets_asis = load_genesets_go_bioconductor()
-}
-}

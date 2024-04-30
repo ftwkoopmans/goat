@@ -9,18 +9,23 @@ symbol_to_entrez(x, hgnc)
 \arguments{
 \item{x}{a data.table with a column symbol}
 
-\item{hgnc}{HGNC lookup table from \code{hgnc_lookuptable()}}
+\item{hgnc}{HGNC lookup table from \code{hgnc_idmap_table()}}
+}
+\value{
+entrez gene IDs are returned in the "gene" column of table \code{x}. Additionally, columns "entrez_id", "hgnc_id" and "hgnc_symbol"
 }
 \description{
 Map the the symbol column in a table to HGNC human gene IDs by matching official gene symbols and synonyms
 }
 \examples{
-\dontrun{
   # TODO: update the filename to your downloaded file
-  # download instructions @ `hgnc_lookuptable`
-  f = "C:/data/hgnc_complete_set.txt"
-  df = data.frame(symbol = c("vamp2", "STXBP1", "UNC18", NA, "PSD95", "NOT-A-GENE"))
-  hgnc = hgnc_lookuptable(f)
-  symbol_to_entrez(df, hgnc)
-}
+  # download instructions in the documentation of `hgnc_idmap_table()`
+  f = "C:/DATA/HGNC/hgnc_complete_set.txt"
+
+  if(file.exists(f)) {
+    df = data.frame(symbol = c("vamp2", "STXBP1", "UNC18", NA, "PSD95", "NOT-A-GENE"))
+    hgnc = hgnc_idmap_table(f)
+    df = symbol_to_entrez(df, hgnc)
+    print(df)
+  }
 }

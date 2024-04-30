@@ -47,3 +47,32 @@ For example, if the input is a genesets table that contains GO_CC, GO_BP and GO_
 
 Note that this is more rigorous than typical GO tools; hypothetically, one could split all GO_CC pathways into 1000 different databases/'sources' and then run enrichment testing. Consequently, the multiple testing burden is reduced if one doesn't adjust p-values for the number of 'sources' as we do here.
 }
+\examples{
+\donttest{
+#' # note; this example downloads data when first run, and typically takes ~60seconds
+
+## Basic example for a complete GOAT workflow
+# Downloads test data to your computer and stores it at current working directory
+# Refer to the GitHub documentation for elaborate documentation and a worked example
+
+# store the downloaded files in the following directory. Here, the temporary file
+# directory is used. Alternatively, consider storing this data in a more permanent location.
+# e.g. output_dir="~/data/go" on unix systems or output_dir="C:/data/go" on Windows
+output_dir = tempdir()
+
+# download an example gene list
+datasets = download_goat_manuscript_data(output_dir)
+genelist = datasets$`Wingo 2020:mass-spec:PMID32424284`
+
+# download GO genesets
+genesets_asis = download_genesets_goatrepo(output_dir)
+
+# filter genesets for sufficient overlap with the genelist, then apply GOAT
+genesets_filtered = filter_genesets(genesets_asis, genelist)
+result = test_genesets(genesets_filtered, genelist, method = "goat",
+  score_type = "effectsize", padj_method = "bonferroni", padj_cutoff = 0.05)
+
+# print first 10 rows of the result table
+print(result |> select(source, name, ngenes, pvalue_adjust) |> utils::head(n=10))
+}
+}

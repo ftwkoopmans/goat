@@ -14,15 +14,13 @@
 
 #include <Rcpp.h>
 
-// consistently with other scripts, require cpp14 although cpp11 would do for this function
-// [[Rcpp::plugins(cpp14)]]
 
 // [[Rcpp::export]]
 Rcpp::NumericMatrix rcpp_gene_to_geneset_scores(int n_gs, Rcpp::IntegerVector gs_index, Rcpp::IntegerVector gs_geneindex, Rcpp::NumericMatrix gene_score)
 {
 
   // basic input validation
-  if ((gs_index.size() == 0) | (gs_index.size() != gs_geneindex.size()) | (gene_score.nrow() == 0) | (gene_score.ncol() == 0))
+  if ((gs_index.size() == 0) || (gs_index.size() != gs_geneindex.size()) || (gene_score.nrow() == 0) || (gene_score.ncol() == 0))
   {
     Rcpp::stop("invalid input data");
   }

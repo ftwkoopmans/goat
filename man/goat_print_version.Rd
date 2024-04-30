@@ -6,9 +6,9 @@
 \usage{
 goat_print_version()
 }
+\value{
+prints to console without returning a value
+}
 \description{
 Print package version and logo to console
-}
-\examples{
-goat_print_version()
 }

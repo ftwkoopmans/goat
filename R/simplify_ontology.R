@@ -2,20 +2,27 @@
 #' Plot a treemap
 #'
 #' @description simple wrapper around the treemap R package. To customize this plot, copy/paste its code and tweak parameters as desired
-#' @examples \dontrun{
-#' # use GOAT as per usual
-#' genelist = goat_example_datasets[["Hondius 2021:mass-spec:PMID33492460"]]
-#' genesets = load_genesets_go_bioconductor()
-#' genesets_filtered = filter_genesets(genesets, genelist)
-#' goat_result = test_genesets(
-#'   genesets_filtered, genelist, method = "goat", score_type = "effectsize",
-#'   padj_method = "bonferroni", padj_cutoff = 0.05
-#' )
+#' @examples \donttest{
+#' # note; this example downloads data when first run, and typically takes ~60seconds
+#'
+#' # store the downloaded files in the following directory. Here, the temporary file
+#' # directory is used. Alternatively, consider storing this data in a more permanent location.
+#' # e.g. output_dir="~/data/goat" on unix systems or output_dir="C:/data/goat" on Windows
+#' output_dir = tempdir()
+#'
+#' ## first run the default example from test_genesets() to obtain geneset results
+#' datasets = download_goat_manuscript_data(output_dir)
+#' genelist = datasets$`Wingo 2020:mass-spec:PMID32424284`
+#' genesets_asis = download_genesets_goatrepo(output_dir)
+#' genesets_filtered = filter_genesets(genesets_asis, genelist)
+#' result = test_genesets(genesets_filtered, genelist, method = "goat",
+#'   score_type = "effectsize", padj_method = "bonferroni", padj_cutoff = 0.05)
+#'
 #' # subset GO CC results
-#' x = goat_result |> filter(signif & source == "GO_CC")
+#' x = result |> filter(signif & source == "GO_CC")
 #' tm = treemap_data(
 #'   geneset_ids = x$id,
-#'   genesets = genesets,
+#'   genesets = genesets_filtered,
 #'   genesets_test_result = x,
 #'   simplify = "leaf_only" # options: none/leaf_only/prune_singletons/pvalue
 #' )
@@ -23,6 +30,7 @@
 #' }
 #' @param x `treemap_plotdata` data table that was computed by the `treemap_data()` function
 #' @param label_group set TRUE to show only group-level labels
+#' @return a ggplot2 object constructed by `treemap::treemap()`
 #' @export
 treemap_plot = function(x, label_group = FALSE) {
   check_dependency("treemap", "plotting treemaps")
@@ -63,9 +71,8 @@ treemap_plot = function(x, label_group = FALSE) {
 
 #' Construct tree and treemap data structures from geneset parent/child relations
 #'
-#' @examples \dontrun{
-#'  # refer to the goat::treemap_plot() function for a complete example
-#' }
+#' refer to the goat::treemap_plot() function for a complete example
+#'
 #' @param geneset_ids vector of geneset identifiers
 #' @param genesets entire geneset table; typically the complete GO database
 #' @param genesets_test_result geneset testing results; the output from `test_genesets()`
@@ -75,6 +82,7 @@ treemap_plot = function(x, label_group = FALSE) {
 #' "pvalue" (remove parent terms where the child term p-value is at least 4 times better)
 #' "none" (default; return all significant genesets that are not a "grouping term" in the treemap)
 #' @param toplevel_max_ngenes groups in the treemap should not have more than this many genes ('ngenes' in geneset test results). If not set, this defaults to 50% of the total number of unique genes in the geneset test results
+#' @return data structure needed for `treemap_plot()`
 #' @export
 treemap_data = function(geneset_ids, genesets, genesets_test_result, simplify = "none", toplevel_max_ngenes = NA) {
   ods = ontology_data_structures(geneset_ids = geneset_ids, genesets = genesets, genesets_test_result = genesets_test_result)
@@ -92,6 +100,7 @@ treemap_data = function(geneset_ids, genesets, genesets_test_result, simplify = 
 #' @param p p
 #' @param edgelist edgelist
 #' @param result result
+#' @noRd
 edgelist_find_children_recursive = function(p, edgelist, result) {
   children = setdiff(edgelist$child[edgelist$parent == p], result)
   if(length(children) == 0) return(result)
@@ -109,6 +118,7 @@ edgelist_find_children_recursive = function(p, edgelist, result) {
 #' @param geneset_table data.frame with columns 'id' and 'parent_id'
 #' @param query set of all colored nodes (vector)
 #' @param result all colored parents, accumulated recursively (vector)
+#' @noRd
 edgelist_find_colored_parents_recursive = function(x, geneset_table, query, result) {
   i = match(x, geneset_table$id)
   if(!is.na(i)) {
@@ -135,6 +145,7 @@ edgelist_find_colored_parents_recursive = function(x, geneset_table, query, resu
 #' @param name element name
 #' @param ngenes element ngenes property
 #' @param edgelist data.frame with properties parent, child, child_name, child_ngenes
+#' @noRd
 edgelist_as_nested = function(x, name, ngenes, edgelist) {
   l = list(id = x, name = name, ngenes = ngenes, children = list())
   rows = edgelist$parent == x
@@ -153,6 +164,7 @@ edgelist_as_nested = function(x, name, ngenes, edgelist) {
 #'
 #' @param x list representing a nested DAG
 #' @param shortlist vector of element IDs
+#' @noRd
 nested_aggregate_child_stats = function(x, shortlist) {
   x$recursiveChildren = c()
   x$recursiveChildrenShortlist = c()
@@ -175,6 +187,7 @@ nested_aggregate_child_stats = function(x, shortlist) {
 #' Recursively replace a DAG element by its children while the child has the same gene count as the parent
 #'
 #' @param x list representing a nested DAG
+#' @noRd
 nested_find_equivalent_child_recursive = function(x) {
   if(length(x$children) > 0) {
     child_ngenes = unlist(lapply(x$children, "[[", "ngenes"))
@@ -196,6 +209,7 @@ nested_find_equivalent_child_recursive = function(x) {
 #' @param obj list representing a nested DAG
 #' @param threshold stop if `obj$ngenes <= threshold`
 #' @param result list of resulting elements (when calling this function, use default empty list)
+#' @noRd
 nested_find_level1_children = function(obj, threshold, result = list()) {
   # halt recursion when there are no children, or node has less than <threshold> genes
   if(length(obj$children) == 0 || obj$ngenes <= threshold) {
@@ -216,6 +230,7 @@ nested_find_level1_children = function(obj, threshold, result = list()) {
 #' @param ids shortlist of geneset IDs
 #' @param genesets importantly, genesets should be the input genesets and not the "filtered" genesets because
 #' only the former contains the complete ontological structure (parent/child links between genesets)
+#' @noRd
 edgelist_from_ontology = function(ids, genesets) {
   if(length(ids) == 0) {
     return()
@@ -239,6 +254,7 @@ edgelist_from_ontology = function(ids, genesets) {
 #'
 #' @param edgelist result from e.g. `edgelist_from_ontology()`
 #' @param genesets filtered genesets
+#' @noRd
 edgelist_find_root = function(edgelist, genesets) {
   root_id = setdiff(unique(edgelist$parent), unique(edgelist$child))
   stopifnot(length(root_id) == 1)
@@ -255,6 +271,7 @@ edgelist_find_root = function(edgelist, genesets) {
 #' @param geneset_ids vector of geneset identifiers
 #' @param genesets entire geneset table; typically the complete GO database
 #' @param genesets_test_result geneset testing results; the output from `test_genesets()`
+#' @noRd
 ontology_data_structures = function(geneset_ids, genesets, genesets_test_result) {
   name = ngenes = pvalue = parent_ngenes = child = NULL # fix invisible bindings R package NOTE
   stopifnot("parameter geneset_ids must not be empty and contain valid genesets_test_result$id values" = length(geneset_ids) > 0 && is.character(geneset_ids) && all(geneset_ids %in% genesets_test_result$id))
@@ -303,6 +320,7 @@ ontology_data_structures = function(geneset_ids, genesets, genesets_test_result)
 #' "pvalue" (remove parent terms where the child term p-value is at least 4 times better)
 #' "none" (default; return all significant genesets that are not a "grouping term" in the treemap)
 #' @param toplevel_max_ngenes groups in the treemap should not have more than this many genes ('ngenes' in geneset test results)
+#' @noRd
 build_treemap = function(ods, simplify = "none", toplevel_max_ngenes = Inf) {
   parent = parent_pvalue = child = child_pvalue = child_name = child_ngenes = children = name = ngenes = group_ngenes = subgroup_name = NULL # fix invisible bindings R package NOTE
   stopifnot(length(simplify) == 1 && simplify %in% c("leaf_only", "prune_singletons", "pvalue", "none"))
@@ -390,6 +408,6 @@ build_treemap = function(ods, simplify = "none", toplevel_max_ngenes = Inf) {
       distinct(subgroup_name, .keep_all = TRUE)
   }
 
-  cat(nrow(treemap_plotdata), "/", length(ods$geneset_ids), " genesets remain after simplifying ontology structure by '", simplify , "'\n", sep="")
+  message(paste0(nrow(treemap_plotdata), "/", length(ods$geneset_ids), " genesets remain after simplifying ontology structure by '", simplify , "'"))
   return(list(treemap_data = treemap_data, treemap_plotdata = treemap_plotdata))
 }

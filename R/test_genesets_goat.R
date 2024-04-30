@@ -6,6 +6,49 @@
 #'
 #' This is the canonical geneset test function for GOAT that uses precomputed null distributions that are bundled with the GOAT package
 #'
+#' @examples \donttest{
+#' # note; this example downloads data when first run, and typically takes ~60seconds
+#'
+#' # store the downloaded files in the following directory. Here, the temporary file
+#' # directory is used. Alternatively, consider storing this data in a more permanent location.
+#' # e.g. output_dir="~/data/goat" on unix systems or output_dir="C:/data/goat" on Windows
+#' output_dir = tempdir()
+#'
+#' ## first run the default example from test_genesets() to obtain input data
+#' datasets = download_goat_manuscript_data(output_dir)
+#' genelist = datasets$`Wingo 2020:mass-spec:PMID32424284`
+#' genesets_asis = download_genesets_goatrepo(output_dir)
+#' genesets_filtered = filter_genesets(genesets_asis, genelist)
+#'
+#' ### we here compare GOAT with precomputed null distributions against
+#' ### a GOAT function that performs bootstrapping to compute null distributions on-demand
+#'
+#' # apply goat with precomputed null (default) and goat with on-demand bootstrapping
+#' result_precomputed = test_genesets(genesets_filtered, genelist, method = "goat",
+#'   score_type = "effectsize", padj_method = "bonferroni", padj_cutoff = 0.05) |>
+#'   # undo sorting by p-value @ test_genesets(), instead sort by stable IDs
+#'   arrange(source, id)
+#' result_bootstrapped = test_genesets(genesets_filtered, genelist, method = "goat_bootstrap",
+#'   score_type = "effectsize", padj_method = "bonferroni", padj_cutoff = 0.05, verbose = TRUE) |>
+#'   arrange(source, id)
+#'
+#' # tables should align
+#' stopifnot(result_precomputed$id == result_bootstrapped$id)
+#' # no missing values
+#' stopifnot(is.finite(result_precomputed$pvalue) &
+#'           is.finite(is.finite(result_bootstrapped$pvalue)))
+#'
+#' # compare results
+#' plot(result_precomputed$pvalue, result_bootstrapped$pvalue)
+#' abline(0, 1, col=2)
+#'
+#' plot(minlog10_fixzero(result_precomputed$pvalue),
+#'      minlog10_fixzero(result_bootstrapped$pvalue))
+#' abline(0, 1, col=2)
+#'
+#' summary(minlog10_fixzero(result_precomputed$pvalue) -
+#'         minlog10_fixzero(result_bootstrapped$pvalue))
+#' }
 #' @param genesets genesets data.frame, must contain columns; "source", "id", "genes", "ngenes"
 #' @param genelist genelist data.frame, must contain columns "gene" and "pvalue"/"effectsize" (depending on parameter `score_type`)
 #' @param score_type how to compute gene scores?
@@ -14,6 +57,14 @@
 #' Option "effectsize_abs" uses values from the effectsize column in `genelist` in a one-way test for enrichment; is a geneset enriched when testing absolute effectsizes?
 #' Option "effectsize_up" uses values from the effectsize column in `genelist` in a one-way test for enrichment; is a geneset enriched in up-regulated genes?  (i.e. positive effectsize)
 #' Option "effectsize_down" uses values from the effectsize column in `genelist` in a one-way test for enrichment; is a geneset enriched in down-regulated genes?  (i.e. negative effectsize)
+#' @return input `genesets` table with results in the "pvalue", "score_type" columns.
+#' "zscore" column:
+#' A standardized z-score is computed from geneset p-values + effectsize direction (up/down) if tested.
+#' Importantly, we here return standardized z-scores because the GOAT geneset score (mean of gene scores) is relative to the respective geneset-size-matched null distributions (a skewed normal)!
+#' In contrast, the standardized z-scores are comparable between genesets (as are the pvalues obviously).
+#'
+#' Only if either (or both) the effectsize-up/down was tested, the direction of regulation has been tested (effectsize_abs and pvalue score types are agnositic to up/down regulation).
+#' So when score_type was set to any of effectsize/effectsize_down/effectsize_up, the z-scores are negative values in case the "score_type" output column is "effectsize_down".
 #' @seealso `test_genesets`
 #' @export
 test_genesets_goat_precomputed = function(genesets, genelist, score_type) {
@@ -53,6 +104,7 @@ test_genesets_goat_precomputed = function(genesets, genelist, score_type) {
 #' @param score_type see `test_genesets_goat_precomputed`
 #' @param niter integer number of bootstrap iterations; at least 10000, at most 5000000
 #' @param verbose boolean, create debug plots
+#' @return see `test_genesets_goat_precomputed`
 #' @export
 test_genesets_goat_fitfunction = function(genesets, genelist, score_type, niter = 500000, verbose = FALSE) {
   validate_goat_scoretype(score_type)
@@ -81,6 +133,7 @@ test_genesets_goat_fitfunction = function(genesets, genelist, score_type, niter 
 #' @param score_type see `test_genesets_goat_precomputed`
 #' @param niter integer number of bootstrap iterations; at least 10000, at most 5000000
 #' @param verbose boolean, create debug plots
+#' @return see `test_genesets_goat_precomputed`
 #' @export
 test_genesets_goat_bootstrap = function(genesets, genelist, score_type, niter = 500000, verbose = FALSE) {
   validate_goat_scoretype(score_type)
@@ -109,7 +162,8 @@ test_genesets_goat_bootstrap = function(genesets, genelist, score_type, niter = 
 #'
 #' @param usize integer vector of geneset sizes
 #' @param par result from `goat_nulldistribution_function`
-#' @returns data.frame with columns; size, mu, sigma, xi
+#' @return data.frame with columns; size, mu, sigma, xi
+#' @noRd
 goat_apply_precomputed_null = function(usize, par) {
   stopifnot(is.list(par) && length(par$sigma_0) == 1)
   f_xi = function(x,l) l$xi_0 + l$xi_1 * x + l$xi_2 * x^2 + l$xi_3 * x^3 + l$xi_4 * x^4 + l$xi_5 * x^5 + l$xi_6 * x^6 + l$xi_7 * x^7 + l$xi_8 * x^8 + l$xi_9 * x^9 + l$xi_10 * x^10 + l$xi_11 * x^11
@@ -140,6 +194,7 @@ goat_apply_precomputed_null = function(usize, par) {
 #' @param genelist see `test_genesets_goat_precomputed`
 #' @param score_type see `test_genesets_goat_precomputed`
 #' @return gene*score_type matrix where rows are aligned with the rows of the genelist table
+#' @noRd
 goat_testgene_score_matrix = function(genelist, score_type) {
   has_pvalue = "pvalue" %in% colnames(genelist)
   has_effectsize = "effectsize" %in% colnames(genelist)
@@ -197,6 +252,7 @@ goat_testgene_score_matrix = function(genelist, score_type) {
 #' @param genelist see `test_genesets_goat_precomputed`
 #' @param score_type see `test_genesets_goat_precomputed`
 #' @param nulldistribution_parameters result from goat_nulldistribution_independent
+#' @noRd
 test_genesets_goat = function(genesets, genelist, score_type, nulldistribution_parameters) {
   stopifnot("precomputed null distributions contain non-finite values" = is.finite(nulldistribution_parameters$size) &
               is.finite(nulldistribution_parameters$mu) &
@@ -209,7 +265,7 @@ test_genesets_goat = function(genesets, genelist, score_type, nulldistribution_p
 
   ### 2) compute geneset scores using C++ helper for fast aggregation
   ul_gs_index = rep(seq_len(nrow(genesets)), genesets$ngenes)
-  ul_gs_geneindex = match(unlist(genesets$genes, use.names = F, recursive = F), genelist$gene)
+  ul_gs_geneindex = match(unlist(genesets$genes, use.names = FALSE, recursive = FALSE), genelist$gene)
   # double-check that this is the filtered geneset input; all genes in the genesets table must match the genelist table
   stopifnot("all genes in the genesets table must be available in the genelist table  (did you forget to apply the filter_genesets() function?)" = !anyNA(ul_gs_geneindex))
   # importantly, rcpp_gene_to_geneset_scores returns sum scores not the mean !
@@ -241,6 +297,12 @@ test_genesets_goat = function(genesets, genelist, score_type, nulldistribution_p
     genesets$pvalue = pmin(1, genesets$pvalue * ncol(genelist_scores))
   }
 
+  # A standardized z-score is computed from geneset p-values + effectsize direction (up/down) if tested.
+  genesets$zscore = stats::qnorm(genesets$pvalue / 2, lower.tail = FALSE)
+  if(any(score_type %in% c("effectsize", "effectsize_down", "effectsize_up"))) {
+    genesets$zscore = genesets$zscore * c(-1,1)[1L + as.integer(genesets$score_type == "effectsize_up")]
+  }
+
   return(genesets)
 }
 
@@ -248,6 +310,7 @@ test_genesets_goat = function(genesets, genelist, score_type, nulldistribution_p
 
 #' helper function to validate input parameters for GOAT computation functions
 #' @param x object to validate
+#' @noRd
 validate_goat_scoretype = function(x) {
   stopifnot("score_type parameter must be any of 'pvalue', 'effectsize', 'effectsize_abs', 'effectsize_up', 'effectsize_down'" = length(x) == 1 && x %in% c("pvalue", "effectsize", "effectsize_up", "effectsize_down", "effectsize_abs"))
 }
@@ -256,6 +319,7 @@ validate_goat_scoretype = function(x) {
 
 #' helper function to validate input parameters for GOAT computation functions
 #' @param x object to validate
+#' @noRd
 validate_goat_niter = function(x) {
   stopifnot("niter parameter must be a single integer between 10000 and 5000000 (default setting is 100000)" = length(x) == 1 && is.numeric(x) && is.finite(x) && x >= 10000L && x <= 5000000)
 }
@@ -264,6 +328,7 @@ validate_goat_niter = function(x) {
 
 #' helper function to validate input parameters for GOAT computation functions
 #' @param x object to validate
+#' @noRd
 validate_goat_verbose = function(x) {
   stopifnot("verbose parameter must be a single boolean (TRUE or FALSE)" = length(x) == 1 && x %in% c(TRUE, FALSE))
 }
@@ -273,6 +338,7 @@ validate_goat_verbose = function(x) {
 #' helper function to validate input parameters for GOAT computation functions
 #' @param x object to validate
 #' @param score_type score type
+#' @noRd
 validate_goat_genelist = function(x, score_type) {
   stopifnot("genelist parameter must be a non-empty data.frame/tibble and contain a 'gene' column" =
               length(x) > 0 && is.data.frame(x) && "gene" %in% colnames(x) )
@@ -291,6 +357,7 @@ validate_goat_genelist = function(x, score_type) {
 #' helper function to validate input parameters for GOAT computation functions
 #' @param x object to validate
 #' @param genelist_N genelist length
+#' @noRd
 validate_goat_genesets = function(x, genelist_N) {
   stopifnot("genesets parameter must be a non-empty data.frame/tibble with columns source, id, genes, ngenes" =
               length(x) > 0 && is.data.frame(x) && nrow(x) > 0 && all(c("source", "id", "genes", "ngenes") %in% colnames(x)) )

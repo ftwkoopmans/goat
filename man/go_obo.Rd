@@ -13,6 +13,11 @@ go_obo(f, rename_namespace = TRUE, remove_obsolete = TRUE)
 
 \item{remove_obsolete}{boolean; remove obsoleted terms?}
 }
+\value{
+tibble with ontology terms and their relations
+}
 \description{
 note that we remove links between GO terms that are across GO domains (e.g. no CC to MF relations)
+The only supported relations are those that match this regex;
+\code{"^(is_a:|relationship: part_of|relationship: regulates|relationship: positively_regulates|relationship: negatively_regulates)"}
 }

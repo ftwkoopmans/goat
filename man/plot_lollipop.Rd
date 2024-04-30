@@ -6,7 +6,7 @@
 \usage{
 plot_lollipop(
   x,
-  output_dir = NA,
+  output_dir,
   only_reduced = FALSE,
   plot_type = "lollipop",
   show_pvalue = FALSE,
@@ -24,7 +24,9 @@ plot_lollipop(
 \arguments{
 \item{x}{results from function \code{test_genesets}}
 
-\item{output_dir}{full path to output directory. Set to NA to directly show the figures instead of writing them to file}
+\item{output_dir}{set to NA to directly show the figures instead of writing them to file.
+Otherwise, this is the full path to the directory where the downloaded files should be stored. Directory is created if it does not exist.
+e.g. \code{output_dir="~/data"} on unix systems, \code{output_dir="C:/data"} on Windows, or set to \code{output_dir=getwd()} to write output to the current working directory}
 
 \item{only_reduced}{only show the reduced/summarized set of significant genesets. This requires that you first applied the \code{reduce_genesets} function}
 
@@ -52,30 +54,48 @@ Rows with other values are assumed NA and colored as grey.}
 
 \item{padj_cutoff}{adjusted pvalue cutoff for terms shown in the plot. If set to NA (default), all significant genesets are used (i.e. 'signif' column in the input geneset table)}
 }
+\value{
+if \code{output_dir} is \code{NA}, a list of ggplot2 objects. Otherwise, write plots to file and do not return any value
+}
 \description{
 Lollipop chart or barplot visualization of geneset enrichment testing results
 }
 \examples{
-\dontrun{
-  # generate lollipop charts for each GO domain (CC/BP/MF), with geneset -log10
-  # adjusted p-value on the x-axis and color-coding by geneset up/down-regulation
-  plot_lollipop(
-    result, output_dir = getwd(), plot_type = "lollipop", topn = 50,
-    score_xaxis = "minlogp", score_color = "updown"
-  )
+\donttest{
+# note; this example downloads data when first run, and typically takes ~60seconds
 
-  # alternatively, as a barplot
-  plot_lollipop(
-    result, output_dir = getwd(), plot_type = "barplot", topn = 50,
-    score_xaxis = "minlogp", score_color = "updown"
-  )
+# store the downloaded files in the following directory. Here, the temporary file
+# directory is used. Alternatively, consider storing this data in a more permanent location.
+# e.g. output_dir="~/data/go" on unix systems or output_dir="C:/data/go" on Windows
+output_dir = tempdir()
 
-  # alternatively, color-code genesets by enrichment of significant genes using
-  # parameter `score_color="oddsratio"` . See further `score_geneset_oddsratio`
-  # function documentation for definition/computation of this score.
-  plot_lollipop(
-    result, output_dir = getwd(), plot_type = "lollipop", topn = 50,
-    score_xaxis = "minlogp", score_color = "oddsratio"
-  )
+## first run the default example from test_genesets() to obtain geneset results
+datasets = download_goat_manuscript_data(output_dir)
+genelist = datasets$`Wingo 2020:mass-spec:PMID32424284`
+genesets_asis = download_genesets_goatrepo(output_dir)
+genesets_filtered = filter_genesets(genesets_asis, genelist)
+result = test_genesets(genesets_filtered, genelist, method = "goat",
+  score_type = "effectsize", padj_method = "bonferroni", padj_cutoff = 0.05)
+
+# generate lollipop charts for each GO domain (CC/BP/MF), with geneset -log10
+# adjusted p-value on the x-axis and color-coding by geneset up/down-regulation
+plot_lollipop(
+  result, output_dir, plot_type = "lollipop", topn = 50,
+  score_xaxis = "minlogp", score_color = "updown"
+)
+
+# alternatively, as a barplot
+plot_lollipop(
+  result, output_dir, plot_type = "barplot", topn = 50,
+  score_xaxis = "minlogp", score_color = "updown"
+)
+
+# alternatively, color-code genesets by enrichment of significant genes using
+# parameter `score_color="oddsratio"` . See further `score_geneset_oddsratio`
+# function documentation for definition/computation of this score.
+plot_lollipop(
+  result, output_dir, plot_type = "lollipop", topn = 50,
+  score_xaxis = "minlogp", score_color = "oddsratio"
+)
 }
 }

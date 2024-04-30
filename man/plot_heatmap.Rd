@@ -6,31 +6,54 @@
 \usage{
 plot_heatmap(
   x,
-  output_dir = NA,
-  heatmap_colors = grDevices::hcl.colors(100, "Viridis", rev = F),
+  output_dir,
+  colors = grDevices::hcl.colors(100, "Viridis", rev = FALSE),
   fontsize = 10
 )
 }
 \arguments{
 \item{x}{result from \code{cluster_genesets()}}
 
-\item{output_dir}{full path to output directory. Set to NA to directly show the figures instead of writing them to file}
+\item{output_dir}{set to NA to directly show the figures instead of writing them to file.
+Otherwise, this is the full path to the directory where the downloaded files should be stored. Directory is created if it does not exist.
+e.g. \code{output_dir="~/data"} on unix systems, \code{output_dir="C:/data"} on Windows, or set to \code{output_dir=getwd()} to write output to the current working directory}
 
-\item{heatmap_colors}{a vector of 100 colors to be used for the heatmap (101 breaks are computed between 0 and the max value in the distance matrix)}
+\item{colors}{a vector of 100 colors to be used for the heatmap (101 breaks are computed between 0 and the max value in the distance matrix)}
 
 \item{fontsize}{parameter sent to pheatmap::pheatmap(); control the size of labels in the plot, defaults to 10. Note that you can also change the plot device size, see examples}
+}
+\value{
+does not return a value, plots are printed to device or files depending on \code{output_dir} parameter
 }
 \description{
 plot the geneset similarity matrix as a heatmap
 }
 \examples{
-\dontrun{
-  # try various color palettes
-  plot_heatmap(plot_heatmapclusters, heatmap_colors = hcl.colors(100, "Viridis", rev = F))
-  plot_heatmap(plot_heatmapclusters, heatmap_colors = hcl.colors(100, "Inferno", rev = F))
-  plot_heatmap(plot_heatmapclusters, heatmap_colors = hcl.colors(100, "Lajolla", rev = T))
-  plot_heatmap(plot_heatmapclusters, heatmap_colors = hcl.colors(100, "Mako", rev = F))
-  plot_heatmap(plot_heatmapclusters, heatmap_colors = hcl.colors(100, "Turku", rev = T))
-  plot_heatmap(plot_heatmapclusters, heatmap_colors = hcl.colors(100, "Grays", rev = T))
+\donttest{
+# note; this example downloads data when first run, and typically takes ~60seconds
+
+# store the downloaded files in the following directory. Here, the temporary file
+# directory is used. Alternatively, consider storing this data in a more permanent location.
+# e.g. output_dir="~/data/goat" on unix systems or output_dir="C:/data/goat" on Windows
+output_dir = tempdir()
+
+## first run the default example from test_genesets() to obtain geneset results
+datasets = download_goat_manuscript_data(output_dir)
+genelist = datasets$`Wingo 2020:mass-spec:PMID32424284`
+genesets_asis = download_genesets_goatrepo(output_dir)
+genesets_filtered = filter_genesets(genesets_asis, genelist)
+result = test_genesets(genesets_filtered, genelist, method = "goat",
+  score_type = "effectsize", padj_method = "bonferroni", padj_cutoff = 0.05)
+
+# prior to running this function, cluster the genesets
+clusters = cluster_genesets(result, genelist)
+
+# use the plot heatmap function and try various color palettes
+plot_heatmap(clusters, output_dir, colors = hcl.colors(100, "Viridis", rev = FALSE))
+plot_heatmap(clusters, output_dir, colors = hcl.colors(100, "Inferno", rev = FALSE))
+plot_heatmap(clusters, output_dir, colors = hcl.colors(100, "Lajolla", rev = TRUE))
+plot_heatmap(clusters, output_dir, colors = hcl.colors(100, "Mako", rev = FALSE))
+plot_heatmap(clusters, output_dir, colors = hcl.colors(100, "Turku", rev = TRUE))
+plot_heatmap(clusters, output_dir, colors = hcl.colors(100, "Grays", rev = TRUE))
 }
 }

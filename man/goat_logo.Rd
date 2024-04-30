@@ -6,9 +6,9 @@
 \usage{
 goat_logo()
 }
+\value{
+package logo as a string
+}
 \description{
 ASCII logo for this package
-}
-\examples{
-cat(goat_logo())
 }

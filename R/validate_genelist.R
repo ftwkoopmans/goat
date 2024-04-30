@@ -2,6 +2,7 @@
 #' validate a table with genes (that should be tested in overrepresentation-analysis) for compatibility with this R package
 #'
 #' @param genelist gene tibble to validate
+#' @noRd
 validate_genelist = function(genelist) {
   # 1) data.frame with all required columns
   ok = is.data.frame(genelist) &&

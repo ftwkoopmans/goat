@@ -11,6 +11,9 @@ lighten_color(color, frac = 0.1)
 
 \item{frac}{fraction of white; >0 and <1}
 }
+\value{
+adjusted value for input \code{color}
+}
 \description{
 naively lighten a color by mixing in white
 }

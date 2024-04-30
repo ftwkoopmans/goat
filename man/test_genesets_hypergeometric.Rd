@@ -15,6 +15,9 @@ is assumed to be the total number of tested genes, the number of rows where sign
 \item{require_nsignif}{minimum number of 'signif genes' that overlap with a geneset; \code{NA} pvalues are returned for genesets with \code{ngenes_signif <= require_nsignif}.
 This function 'prefilters' genesets, so beware that this will influence downstream multiple testing correction. Default is 1}
 }
+\value{
+input \code{genesets} table with results in the "pvalue" column
+}
 \description{
 In most cases, it's more convenient to call the more generic \code{test_genesets} function which also deals with multiple-testing correction (per geneset source)
 

@@ -23,6 +23,9 @@ test_genesets_goat_fitfunction(
 
 \item{verbose}{boolean, create debug plots}
 }
+\value{
+see \code{test_genesets_goat_precomputed}
+}
 \description{
 In typical use-cases, one applies \code{test_genesets()} instead with parameter \code{method="goat"} ,
 which in turn will use \code{test_genesets_goat_precomputed} (and not this function).

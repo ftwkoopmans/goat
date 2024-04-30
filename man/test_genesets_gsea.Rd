@@ -12,7 +12,8 @@ test_genesets_gsea(
   gseaParam = 1,
   nPermSimple = 50000,
   gsea_genelist_col = NULL,
-  gsea_scoretype = NULL
+  gsea_scoretype = NULL,
+  random_seed = 123
 )
 }
 \arguments{
@@ -28,13 +29,18 @@ Option "custom" expects 2 additional parameters; \code{gsea_genelist_col} should
 \item{parallel_threads}{number of threads to use for parallel processing. Set to 0 to automatically select all available processors/cores, set to 1 to disable (default) or to N to use N processes.
 Note that multiprocessing sometimes breaks on RStudio + Windows, hence this parameter is set to 1 to disable multiprocessing by default for now}
 
-\item{gseaParam}{passed to \code{fgsea::fgsea()}, from manual: "GSEA parameter value, all gene-level statis are raised to the power of 'gseaParam' before calculation of GSEA enrichment scores.". default = 1}
+\item{gseaParam}{passed to \code{fgsea::fgsea()}, from manual: "GSEA parameter value, all gene-level statis are raised to the power of 'gseaParam' before calculation of GSEA enrichment scores.". default = 1. Further comments by fGSEA author at https://github.com/ctlab/fgsea/issues/45}
 
 \item{nPermSimple}{passed to \code{fgsea::fgsea()}, from manual: "Number of permutations in the simple fgsea implementation for preliminary estimation of P-values.". default = 50000 in this R package but 1000 by default in fGSEA v1.22.0; we observed much better accuracy in null simulations when increasing this from default 1k to 10k and further minor improvement towards 50k, hence the latter is our default}
 
 \item{gsea_genelist_col}{optional, only used for \code{score_type} "custom"}
 
 \item{gsea_scoretype}{optional, only used for \code{score_type} "custom"}
+
+\item{random_seed}{the random seed that is passed to \code{set.seed()} in order to ensure fgsea results are reproducible. default: 123}
+}
+\value{
+input \code{genesets} table with results in the "pvalue", "score_type" and "gsea_nes" columns
 }
 \description{
 In most cases, it's more convenient to call the more generic \code{test_genesets} function which also deals with multiple-testing correction (per geneset source)

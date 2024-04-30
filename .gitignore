@@ -2,4 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
+DESCRIPTION-github
+DESCRIPTION-cran
+CRAN-SUBMISSION
+cran-comments.md
 /dev/**

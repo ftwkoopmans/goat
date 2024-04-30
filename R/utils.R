@@ -1,8 +1,7 @@
 
 #' ASCII logo for this package
 #'
-#' @examples
-#' cat(goat_logo())
+#' @return package logo as a string
 #' @export
 goat_logo = function() {
   '          )_)
@@ -17,6 +16,7 @@ goat_logo = function() {
 #' Return goat package version as a string
 #'
 #' simple wrapper around utils::packageVersion()
+#' @return package version as a string
 #' @export
 goat_version = function() {
   as.character(utils::packageVersion("goat"))
@@ -26,22 +26,23 @@ goat_version = function() {
 
 #' Print package version and logo to console
 #'
-#' @examples
-#' goat_print_version()
+#' @return prints to console without returning a value
 #' @export
 goat_print_version = function() {
-  cat(sprintf("%s\nGOAT version %s\n", goat_logo(), goat_version()))
+  message(sprintf("%s\nGOAT version %s", goat_logo(), goat_version()))
 }
 
 
 
 #' return a prettyprint string of all length 1 parameters that are string/numeric/logical/NA
 #'
-#' @examples \dontrun{
-#'   parameters_prettyprint_length1(test1=1:2, test2=matrix(1:4,2,2), test3=data.frame(a=1),
-#'                                  test4=c(a=1), test5=1, test6="a", test7=NA, test8=Inf)
-#' }
+#' @examples
+#' parameters_prettyprint_length1(
+#'   test1=1:2, test2=matrix(1:4,2,2), test3=data.frame(a=1),
+#'   test4=c(a=1), test5=1, test6="a", test7=NA, test8=Inf
+#' )
 #' @param ... arbitrary set of parameters
+#' @noRd
 parameters_prettyprint_length1 = function(...) {
   arguments = list(...)
   if(length(arguments) == 0 || !is.list(arguments)) {
@@ -69,6 +70,7 @@ parameters_prettyprint_length1 = function(...) {
 #'
 #' @param pkg R package name
 #' @param msg function name / reference for user
+#' @noRd
 check_dependency = function(pkg, msg) {
   if(!requireNamespace(pkg, quietly = TRUE)) {
     stop(paste0(
@@ -88,6 +90,8 @@ check_dependency = function(pkg, msg) {
 #' https://stackoverflow.com/a/8197703
 #'
 #' @param n number of colors
+#' @return a color code (string)
+#' @export
 gg_color_hue = function(n) {
   hues = seq(15, 375, length = n + 1)
   grDevices::hcl(h = hues, l = 65, c = 100)[1:n]
@@ -99,9 +103,34 @@ gg_color_hue = function(n) {
 #'
 #' @param color input colors
 #' @param frac fraction of white; >0 and <1
+#' @return adjusted value for input `color`
+#' @export
 lighten_color = function(color, frac = 0.1){
   stopifnot(frac > 0 & frac < 1)
   sapply(color, function(x) grDevices::colorRampPalette(c(x, "white"))(100)[ceiling(frac * 100)], simplify = TRUE, USE.NAMES = FALSE)
+}
+
+
+
+#' naively darken a color by mixing in black
+#'
+#' @param color input colors
+#' @param frac fraction of black; >0 and <1
+#' @return adjusted value for input `color`
+#' @export
+darken_color = function(color, frac = 0.1){
+  stopifnot(frac > 0 & frac < 1)
+  sapply(color, function(x) grDevices::colorRampPalette(c(x, "black"))(100)[ceiling(frac * 100)], simplify = TRUE, USE.NAMES = FALSE)
+}
+
+
+
+#' check if a string is a valid R color-code
+#'
+#' @param x input string
+#' @noRd
+isvalid_color = function(x) {
+  length(x) == 1 && !is.na(x) && is.character(x) && suppressWarnings(tryCatch(is.matrix(grDevices::col2rgb(x)), error = function(e) FALSE))
 }
 
 
@@ -112,6 +141,8 @@ lighten_color = function(color, frac = 0.1){
 #' @param string string that should be truncated
 #' @param width desired max length
 #' @param trim_left instead of right trunc (default), do left instead
+#' @return truncated variant of input `string`
+#' @export
 string_trunc_right = function(string, width, trim_left = FALSE) {
   N = nchar(string)
   too_long = !is.na(string) & N > 3 & N > width # hardcoded min string length @ 4

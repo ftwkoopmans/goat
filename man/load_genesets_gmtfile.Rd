@@ -24,10 +24,7 @@ filename should be something like "c2.cp.kegg.v2023.1.Hs.entrez.gmt"
 }
 
 \examples{
-\dontrun{
-  genesets_asis = load_genesets_gmtfile(
-    filename = "C:/DATA/c2.cp.kegg.v2023.1.Hs.entrez.gmt",
-    label = "KEGG"
-  )
-}
+  # TODO: update the filename to your downloaded file
+  f = "C:/DATA/c2.cp.kegg.v2023.1.Hs.entrez.gmt"
+  if(file.exists(f)) genesets_asis = load_genesets_gmtfile(f, label = "KEGG")
 }

@@ -5,4 +5,4 @@ All code and documentation in the goat R package as a whole is distributed under
 
 The goat R package includes the 'RunningStat' implementation of "Welford running variance" provided on John Cook's blog at https://www.johndcook.com/blog/standard_deviation/
 
-The goat R package bundles a number of publicly available datasets that were adopted from published scientific manuscripts. Respective PubMed identifiers are included in the dataset names.
+The goat R package bundles publicly available data that were adopted from published scientific manuscripts. Respective PubMed identifiers are included in the dataset names.

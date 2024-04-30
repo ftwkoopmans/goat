@@ -22,6 +22,7 @@
 #' @param genelist same as provided for `test_genesets()`. A column named 'symbol' is required, it'll be used to pretty-print gene symbols per geneset in the output table
 #' @param filename full path to the output file. Supported file extensions; csv, tsv, xlsx. Optionally, set to NA to not write to disk and return the result table instead
 #' @param arrange_genes set to TRUE (default) to arrange the genelist table by best p-value on top (if column 'pvalue' exists), alternatively by descending absolute effectsize (if no pvalue but effectize is available). Set FALSE to use sorting of the genelist table as-is
+#' @return if `filename` is `NA`, returns the validated and formatted geneset result table. Otherwise, writes the table to file and does not return a value
 #' @export
 save_genesets = function(x, genelist, filename, arrange_genes = TRUE) {
   pvalue = effectsize = genes = genes_signif = NULL # fix invisible bindings R package NOTE
@@ -42,9 +43,9 @@ save_genesets = function(x, genelist, filename, arrange_genes = TRUE) {
     }
   }
 
-  is_xlsx = grepl("\\.xlsx$", filename, ignore.case = T)
-  is_tsv = grepl("\\.tsv$", filename, ignore.case = T)
-  is_csv = grepl("\\.csv$", filename, ignore.case = T)
+  is_xlsx = grepl("\\.xlsx$", filename, ignore.case = TRUE)
+  is_tsv = grepl("\\.tsv$", filename, ignore.case = TRUE)
+  is_csv = grepl("\\.csv$", filename, ignore.case = TRUE)
   stopifnot("unknown file extension; filename should should end with '.xslx' or '.tsv' or '.csv'" = is.na(filename) || is_xlsx || is_tsv || is_csv)
 
   # note that we again repeat input validation of genesets and genelist to enforce integer ID type -> otherwise, matching/lookup might fail
@@ -71,7 +72,7 @@ save_genesets = function(x, genelist, filename, arrange_genes = TRUE) {
       if("effectsize" %in% colnames(ref)) {
         ref = ref |> arrange(desc(abs(effectsize)))
       } else {
-        cat("save_genesets(); arrange_genes = TRUE, but genelist table has no pvalue nor effectsize column so no sorting is applied\n")
+        warning("save_genesets(); arrange_genes = TRUE, but genelist table has no pvalue nor effectsize column so no sorting is applied")
       }
     }
   }
@@ -87,12 +88,12 @@ save_genesets = function(x, genelist, filename, arrange_genes = TRUE) {
 
   # efficiently gene symbols by unlisting, vectorized matching, and relisting
   gene_to_symbol = function(l, ref) {
-    ul = unlist(l, recursive = T, use.names = F)
+    ul = unlist(l, recursive = TRUE, use.names = FALSE)
     i = match(ul, ref$gene)
     stopifnot("some genes in the genesets table could not be matched to the genelist table" = !anyNA(i))
     ul = ref$symbol[i]
     result = utils::relist(ul, skeleton = utils::as.relistable(l))
-    unlist(lapply(result, paste, collapse = ","), recursive = F, use.names = F)
+    unlist(lapply(result, paste, collapse = ","), recursive = FALSE, use.names = FALSE)
   }
 
   result$genes_symbol = gene_to_symbol(result$genes, ref)
@@ -102,8 +103,8 @@ save_genesets = function(x, genelist, filename, arrange_genes = TRUE) {
   result$genes_symbol = string_trunc_right(result$genes_symbol, width = nchar_limit)
   result$genes_signif_symbol = string_trunc_right(result$genes_signif_symbol, width = nchar_limit)
   # collapse gene identifiers as well + truncate
-  result$genes = string_trunc_right(unlist(lapply(result$genes, paste, collapse = ","), recursive = F, use.names = F), width = nchar_limit)
-  result$genes_signif = string_trunc_right(unlist(lapply(result$genes_signif, paste, collapse = ","), recursive = F, use.names = F), width = nchar_limit)
+  result$genes = string_trunc_right(unlist(lapply(result$genes, paste, collapse = ","), recursive = FALSE, use.names = FALSE), width = nchar_limit)
+  result$genes_signif = string_trunc_right(unlist(lapply(result$genes_signif, paste, collapse = ","), recursive = FALSE, use.names = FALSE), width = nchar_limit)
 
   result = result |>
     # remove any remaining list-type columns that the user may have added
@@ -149,12 +150,13 @@ save_genesets = function(x, genelist, filename, arrange_genes = TRUE) {
 #' @param x see `save_genesets()`
 #' @param genelist see `save_genesets()`
 #' @param settings settings attribute attached to the genesets result table
+#' @noRd
 methods_text = function(x, genelist, settings) {
   usource = unique(x$source)
   settings = paste(settings, collapse=" ")
   # extract parameters from settings string
-  is_genesets_go = grepl("load_genesets_go", settings, ignore.case = T)
-  is_genesets_syngo = grepl("syngo", settings, ignore.case = T)
+  is_genesets_go = grepl("load_genesets_go", settings, ignore.case = TRUE)
+  is_genesets_syngo = grepl("syngo", settings, ignore.case = TRUE)
 
   get_setting = function(attr, s, default = " *** unknown, check code/logfile *** ") {
     x = gsub(paste0(".*", attr, " *= *'*([^' ,;]+).*"), "\\1", s)

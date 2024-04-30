@@ -29,17 +29,37 @@ partition_genes(
 
 \item{topn}{number of rows in \code{genes} tibble to select  (must provide exactly 1 parameter for filtering, either \code{cutoff}, \code{fraction} or \code{topn})}
 }
+\value{
+input table \code{genes} with results in the "signif" column
+}
 \description{
 This can be convenient to prepare the significant/test/foreground set for classical ORA,
-e.g. \code{test_genesets()} with parameter \code{method = "fisherexact"}.
+e.g. \code{test_genesets()} with parameter \code{method = "fisherexact"}. Note that the GOAT geneset
+enrichment algorithm does not use data in the 'signif' column of the input genelist.
 }
 \examples{
-\dontrun{
-  # significant hits
-  genelist = partition_genes(genelist, col="pvalue_adjust", decreasing=F, cutoff=0.01)
-  # abs(effectsize) >= 4
-  genelist = partition_genes(genelist, col="effectsize", decreasing=T, use_abs=T, cutoff=4)
-  # top 10\% 'best' p-values
-  genelist = partition_genes(genelist, col="pvalue", decreasing=F, fraction = 0.1)
+\donttest{
+# note: this example will download 1 files of approx 4MB
+
+# store the downloaded files in the following directory. Here, the temporary file
+# directory is used. Alternatively, consider storing this data in a more permanent location.
+# e.g. output_dir="~/data/goat" on unix systems or output_dir="C:/data/goat" on Windows
+output_dir = tempdir()
+
+# Download an example gene list, i.e. one of the datasets analyzed in the GOAT manuscript.
+datasets = download_goat_manuscript_data(output_dir)
+genelist = datasets$`Wingo 2020:mass-spec:PMID32424284`
+
+# example 1: significant hits
+genelist = partition_genes(genelist, col="pvalue_adjust", decreasing=FALSE, cutoff=0.01)
+cat(sum(genelist$signif), "/", nrow(genelist), "are signif\n")
+
+# example 2: abs(effectsize) >= 5
+genelist = partition_genes(genelist, col="effectsize", decreasing=TRUE, use_abs=TRUE, cutoff=5)
+cat(sum(genelist$signif), "/", nrow(genelist), "are signif\n")
+
+# example 3: top 10\% 'best' p-values
+genelist = partition_genes(genelist, col="pvalue", decreasing=FALSE, fraction = 0.1)
+cat(sum(genelist$signif), "/", nrow(genelist), "are signif\n")
 }
 }

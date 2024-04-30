@@ -27,11 +27,9 @@ treemap_data(
 
 \item{toplevel_max_ngenes}{groups in the treemap should not have more than this many genes ('ngenes' in geneset test results). If not set, this defaults to 50\% of the total number of unique genes in the geneset test results}
 }
+\value{
+data structure needed for \code{treemap_plot()}
+}
 \description{
-Construct tree and treemap data structures from geneset parent/child relations
-}
-\examples{
-\dontrun{
- # refer to the goat::treemap_plot() function for a complete example
-}
+refer to the goat::treemap_plot() function for a complete example
 }

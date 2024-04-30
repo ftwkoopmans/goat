@@ -7,7 +7,7 @@
 load_genesets_syngo(filename, gene_database = "entrez")
 }
 \arguments{
-\item{filename}{input file for this function should be the full path name for "syngo_ontologies.xlsx" from a SynGO bulk download}
+\item{filename}{full path to the "syngo_ontologies.xlsx" file that was extracted from a SynGO bulk download ZIP archive}
 
 \item{gene_database}{gene IDs to return. must be any of; "entrez" (default), "hgnc", "ensembl"}
 }
@@ -24,9 +24,7 @@ Workflow;
 }
 }
 \examples{
-\dontrun{
-  genesets_asis = load_genesets_syngo(
-    "C:/DATA/SynGO_bulk_download_release_20210225/syngo_ontologies.xlsx"
-  )
-}
+  # TODO: update the filename to your downloaded file
+  f = "C:/DATA/SynGO_bulk_download_release_20210225/syngo_ontologies.xlsx"
+  if(file.exists(f)) genesets_asis = load_genesets_syngo(f)
 }

@@ -9,6 +9,9 @@ gg_color_hue(n)
 \arguments{
 \item{n}{number of colors}
 }
+\value{
+a color code (string)
+}
 \description{
 https://stackoverflow.com/a/8197703
 }

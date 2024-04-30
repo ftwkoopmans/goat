@@ -10,14 +10,24 @@
 #'
 #' Only genesets with at least 1 significant gene are subjected to statistical testing (e.g. NA is returned for genesets without significant genes)
 #'
-#' @examples \dontrun{
-#'   ### same results between Fisher-exact and hypergeometric tests
-#'   # < prepare genelist table first >
-#'   gs = load_genesets_go_bioconductor()
-#'   gsf = filter_genesets(gs, genelist, min_overlap = 10L, max_overlap = 1500L)
-#'   x_hg = test_genesets_hypergeometric(gsf, genelist, min_signif = 3L)
-#'   x_fe = test_genesets_fisherexact(gsf, genelist, min_signif = 3L)
-#'   all.equal(x_hg$pvalue, x_fe$pvalue)
+#' @examples \donttest{
+#' # note; this example downloads data when first run, and typically takes ~60seconds
+#'
+#' # store the downloaded files in the following directory. Here, the temporary file
+#' # directory is used. Alternatively, consider storing this data in a more permanent location.
+#' # e.g. output_dir="~/data/goat" on unix systems or output_dir="C:/data/goat" on Windows
+#' output_dir = tempdir()
+#'
+#' ## first run the default example from test_genesets() to obtain input data
+#' datasets = download_goat_manuscript_data(output_dir)
+#' genelist = datasets$`Wingo 2020:mass-spec:PMID32424284`
+#' genesets_asis = download_genesets_goatrepo(output_dir)
+#' genesets_filtered = filter_genesets(genesets_asis, genelist)
+#'
+#' ## example: same results between Fisher-exact and hypergeometric tests
+#' result_hg = test_genesets_hypergeometric(genesets_filtered, genelist, require_nsignif = 3L)
+#' result_fe = test_genesets_fisherexact(genesets_filtered, genelist, require_nsignif = 3L)
+#' all.equal(result_hg$pvalue, result_fe$pvalue)
 #' }
 #' @param genesets tibble with genesets, must contain columns 'id', 'ngenes' and 'ngenes_signif'
 #' @param genelist tibble with genes, must contain column 'signif'. The number of rows in this table (where signif is not NA)
@@ -25,6 +35,7 @@
 #' @param require_nsignif minimum number of 'signif genes' that overlap with a geneset; `NA` pvalues are returned for genesets with `ngenes_signif <= require_nsignif`.
 #' This function 'prefilters' genesets, so beware that this will influence downstream multiple testing correction. Default is 1
 #' @param use_ease use a more conservative score coined by DAVID online tools @ https://david.ncifcrf.gov/helps/functional_annotation.html#fisher
+#' @return input `genesets` table with results in the "pvalue" column
 #' @seealso `test_genesets`
 #' @export
 test_genesets_fisherexact = function(genesets, genelist, require_nsignif = 1L, use_ease = FALSE) {

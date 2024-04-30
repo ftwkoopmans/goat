@@ -18,10 +18,65 @@ Option "effectsize_abs" uses values from the effectsize column in \code{genelist
 Option "effectsize_up" uses values from the effectsize column in \code{genelist} in a one-way test for enrichment; is a geneset enriched in up-regulated genes?  (i.e. positive effectsize)
 Option "effectsize_down" uses values from the effectsize column in \code{genelist} in a one-way test for enrichment; is a geneset enriched in down-regulated genes?  (i.e. negative effectsize)}
 }
+\value{
+input \code{genesets} table with results in the "pvalue", "score_type" columns.
+"zscore" column:
+A standardized z-score is computed from geneset p-values + effectsize direction (up/down) if tested.
+Importantly, we here return standardized z-scores because the GOAT geneset score (mean of gene scores) is relative to the respective geneset-size-matched null distributions (a skewed normal)!
+In contrast, the standardized z-scores are comparable between genesets (as are the pvalues obviously).
+
+Only if either (or both) the effectsize-up/down was tested, the direction of regulation has been tested (effectsize_abs and pvalue score types are agnositic to up/down regulation).
+So when score_type was set to any of effectsize/effectsize_down/effectsize_up, the z-scores are negative values in case the "score_type" output column is "effectsize_down".
+}
 \description{
 In most cases, it's more convenient to call the more generic \code{test_genesets} function which also applies multiple-testing correction (per geneset source) to the geneset p-values computed by this function.
 
 This is the canonical geneset test function for GOAT that uses precomputed null distributions that are bundled with the GOAT package
+}
+\examples{
+\donttest{
+# note; this example downloads data when first run, and typically takes ~60seconds
+
+# store the downloaded files in the following directory. Here, the temporary file
+# directory is used. Alternatively, consider storing this data in a more permanent location.
+# e.g. output_dir="~/data/goat" on unix systems or output_dir="C:/data/goat" on Windows
+output_dir = tempdir()
+
+## first run the default example from test_genesets() to obtain input data
+datasets = download_goat_manuscript_data(output_dir)
+genelist = datasets$`Wingo 2020:mass-spec:PMID32424284`
+genesets_asis = download_genesets_goatrepo(output_dir)
+genesets_filtered = filter_genesets(genesets_asis, genelist)
+
+### we here compare GOAT with precomputed null distributions against
+### a GOAT function that performs bootstrapping to compute null distributions on-demand
+
+# apply goat with precomputed null (default) and goat with on-demand bootstrapping
+result_precomputed = test_genesets(genesets_filtered, genelist, method = "goat",
+  score_type = "effectsize", padj_method = "bonferroni", padj_cutoff = 0.05) |>
+  # undo sorting by p-value @ test_genesets(), instead sort by stable IDs
+  arrange(source, id)
+result_bootstrapped = test_genesets(genesets_filtered, genelist, method = "goat_bootstrap",
+  score_type = "effectsize", padj_method = "bonferroni", padj_cutoff = 0.05, verbose = TRUE) |>
+  arrange(source, id)
+
+# tables should align
+stopifnot(result_precomputed$id == result_bootstrapped$id)
+# no missing values
+stopifnot(is.finite(result_precomputed$pvalue) &
+          is.finite(is.finite(result_bootstrapped$pvalue)))
+
+# compare results
+plot(result_precomputed$pvalue, result_bootstrapped$pvalue)
+abline(0, 1, col=2)
+
+plot(minlog10_fixzero(result_precomputed$pvalue),
+     minlog10_fixzero(result_bootstrapped$pvalue))
+abline(0, 1, col=2)
+
+summary(minlog10_fixzero(result_precomputed$pvalue) -
+        minlog10_fixzero(result_bootstrapped$pvalue))
+}
 }
 \seealso{
 \code{test_genesets}

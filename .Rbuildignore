@@ -4,3 +4,7 @@
 ^NOTICE$
 ^analyses$
 ^dev$
+^cran-comments\.md$
+^CRAN-SUBMISSION$
+^DESCRIPTION-github$
+^DESCRIPTION-cran$

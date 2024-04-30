@@ -26,7 +26,7 @@ filter_genesets = function(genesets, genelist, min_overlap = 10L, max_overlap = 
   if(!is.finite(max_size)) max_size = Inf # users can provide NA to disable filtering
 
   if(min_signif > 0) {
-    cat("Warning: the 'min_signif' parameter is enabled. Be careful, this is \"prefiltering\" and will affect the correcteness / calibration of estimated geneset p-values. For GOAT and GSEA, this is NOT RECOMMENDED\n")
+    warning("the 'min_signif' parameter is enabled. Be careful, this is \"prefiltering\" and will affect the correcteness / calibration of estimated geneset p-values. For GOAT and GSEA, this is NOT RECOMMENDED")
   }
 
   # settings as string
@@ -78,7 +78,7 @@ filter_genesets = function(genesets, genelist, min_overlap = 10L, max_overlap = 
       group_by(ngenes) |> # can only be a dupe if vector length is equal, so efficiently check within same-length
       mutate(isdupe = finddupes(genes)) |>
       ungroup() |>
-      filter(isdupe == F) |>
+      filter(isdupe == FALSE) |>
       select(-isdupe)
   }
 
@@ -96,7 +96,7 @@ filter_genesets = function(genesets, genelist, min_overlap = 10L, max_overlap = 
   }
 
   if(nrow(x) == 0) {
-    cat("filter_genesets() yields an empty result !\nAre the gene identifiers in your 'genesets' and 'genelist tables of the same type? e.g. both tables should contain NCBI Entrez gene IDs, or both use HGNC identifiers, or Ensembl gene IDs. Another common mistake is using different species, so double-check that both tables contain e.g. human gene identifiers\n")
+    warning("filter_genesets() yields an empty result !\nAre the gene identifiers in your 'genesets' and 'genelist tables of the same type? e.g. both tables should contain NCBI Entrez gene IDs, or both use HGNC identifiers, or Ensembl gene IDs. Another common mistake is using different species, so double-check that both tables contain e.g. human gene identifiers")
   }
 
   attr(x, "settings") <- c(attr(genesets, "settings"), settings)

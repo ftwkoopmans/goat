@@ -10,15 +10,15 @@
 #' table: "Total Approved Symbols" -->> "TXT" / "text file in TSV format"
 #' filename is typically something like non_alt_loci_set.txt
 #'
-#' @param f full path to the downloaded table (expected to be tsv format)
-#' @returns a long-format table with columns; hgnc_id, hgnc_symbol, type, value
+#' @param filename full path to the downloaded table (expected to be tsv format, typically has .txt or .tsv file extension)
+#' @return a long-format table with columns; hgnc_id, hgnc_symbol, type, value
 #' @export
-hgnc_lookuptable = function(f) {
+hgnc_idmap_table = function(filename) {
   symbol = hgnc_id = hgnc_symbol = entrez_id = prev_symbol = alias_symbol = NULL # fix invisible bindings R package NOTE
-  stopifnot("parameter f must be an existing file" = length(f) == 1 && is.character(f) && file.exists(f))
+  stopifnot("parameter filename must be an existing file" = length(filename) == 1 && is.character(filename) && file.exists(filename))
 
   # parse HGNC table
-  hgnc = data.table::fread(f, data.table = F, stringsAsFactors = F)
+  hgnc = data.table::fread(filename, data.table = FALSE, stringsAsFactors = FALSE)
   colnames(hgnc) = tolower(colnames(hgnc))
   cols_expect = c("hgnc_id", "symbol", "alias_symbol", "prev_symbol", "entrez_id")
   cols_alt = c("HGNC ID", "Approved symbol", "Previous symbols", "Alias symbols", "NCBI Gene ID")
@@ -49,7 +49,7 @@ hgnc_lookuptable = function(f) {
   l = strsplit(toupper(hgnc$synonyms), "[ ,;|]+") # support various delimiters
   map_synonym = data.frame(
     hgnc_id = rep(hgnc$hgnc_id, lengths(l)),
-    symbol = unlist(l, recursive = F, use.names = F)
+    symbol = unlist(l, recursive = FALSE, use.names = FALSE)
   ) |>
     filter(nchar(symbol) >= 2 &  ! symbol %in% hgnc$hgnc_symbol) |>
     # deal with duplicate synonyms within 1 row/hgnc_id
@@ -67,16 +67,20 @@ hgnc_lookuptable = function(f) {
 
 #' Map the the symbol column in a table to HGNC human gene IDs by matching official gene symbols and synonyms
 #'
-#' @examples \dontrun{
+#' @examples
 #'   # TODO: update the filename to your downloaded file
-#'   # download instructions @ `hgnc_lookuptable`
-#'   f = "C:/data/hgnc_complete_set.txt"
-#'   df = data.frame(symbol = c("vamp2", "STXBP1", "UNC18", NA, "PSD95", "NOT-A-GENE"))
-#'   hgnc = hgnc_lookuptable(f)
-#'   symbol_to_entrez(df, hgnc)
-#' }
+#'   # download instructions in the documentation of `hgnc_idmap_table()`
+#'   f = "C:/DATA/HGNC/hgnc_complete_set.txt"
+#'
+#'   if(file.exists(f)) {
+#'     df = data.frame(symbol = c("vamp2", "STXBP1", "UNC18", NA, "PSD95", "NOT-A-GENE"))
+#'     hgnc = hgnc_idmap_table(f)
+#'     df = symbol_to_entrez(df, hgnc)
+#'     print(df)
+#'   }
 #' @param x a data.table with a column symbol
-#' @param hgnc HGNC lookup table from `hgnc_lookuptable()`
+#' @param hgnc HGNC lookup table from `hgnc_idmap_table()`
+#' @return entrez gene IDs are returned in the "gene" column of table `x`. Additionally, columns "entrez_id", "hgnc_id" and "hgnc_symbol"
 #' @export
 symbol_to_entrez = function(x, hgnc) {
   symbol = NULL # fix invisible bindings R package NOTE
@@ -84,7 +88,7 @@ symbol_to_entrez = function(x, hgnc) {
     stop("x must be a data.frame with column 'symbol' (character type)")
   }
   if(!is.data.frame(hgnc) || nrow(hgnc) == 0 || !all(c("hgnc_id", "hgnc_symbol", "synonym", "entrez_id") %in% colnames(hgnc)) ) {
-    stop("hgnc must be a data.frame with columns 'hgnc_id', 'hgnc_symbol', 'synonym', 'entrez_id' as typically prepared using the hgnc_lookuptable() function")
+    stop("hgnc must be a data.frame with columns 'hgnc_id', 'hgnc_symbol', 'synonym', 'entrez_id' as typically prepared using the hgnc_idmap_table() function")
   }
 
   x$symbol_input = x$symbol
@@ -109,6 +113,7 @@ symbol_to_entrez = function(x, hgnc) {
   i = match(x$hgnc_id, hgnc$hgnc_id)
   x$hgnc_symbol = hgnc$hgnc_symbol[i]
   x$entrez_id = hgnc$entrez_id[i]
+  x$gene = x$entrez_id
 
   # restore input symbols
   x$symbol = x$symbol_input
@@ -118,7 +123,7 @@ symbol_to_entrez = function(x, hgnc) {
   tmp = x |> filter(rows_symbol_fail == FALSE) |> distinct(symbol, .keep_all = TRUE)
   n_input = nrow(tmp)
   n_fail = sum(is.na(tmp$hgnc_id))
-  cat(sprintf("%d / %d (%.1f%%) unique symbols could not be mapped to a HGNC human gene ID\n",
+  message(sprintf("%d / %d (%.1f%%) unique symbols could not be mapped to a HGNC human gene ID",
               n_fail, n_input, n_fail / n_input * 100 ))
 
   return(x)

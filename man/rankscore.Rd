@@ -25,12 +25,11 @@ rank^2 can yield huge values, e.g. a large genelist of N=50000 genes would imply
 Thus we rescale these scores between 0~1000 so downstream applications (e.g. sum of 10000 gene scores) don't explode to huge numbers.
 }
 \examples{
-\dontrun{
-  x = data.frame(gene=c(1,2,3,4,5), pvalue=c(0.01, 1, 1, 0.1, 1),
+  x = data.frame(gene=c(1, 2, 3, 4, 5),
+                 pvalue=c(0.01, 1, 1, 0.1, 1),
                  effectsize=c(-2, 0.25, 0.5, 1, 0.25))
   print(x, row.names = FALSE)
-  print(goat:::rankscore(x, sort1 = -1*x$pvalue, sort2 = abs(x$effectsize),
+  print(rankscore(x, sort1 = -1*x$pvalue, sort2 = abs(x$effectsize),
         sort3 = x$gene, colname="score") |>
     arrange(desc(score)), row.names = FALSE)
-}
 }

@@ -11,24 +11,34 @@ treemap_plot(x, label_group = FALSE)
 
 \item{label_group}{set TRUE to show only group-level labels}
 }
+\value{
+a ggplot2 object constructed by \code{treemap::treemap()}
+}
 \description{
 simple wrapper around the treemap R package. To customize this plot, copy/paste its code and tweak parameters as desired
 }
 \examples{
-\dontrun{
-# use GOAT as per usual
-genelist = goat_example_datasets[["Hondius 2021:mass-spec:PMID33492460"]]
-genesets = load_genesets_go_bioconductor()
-genesets_filtered = filter_genesets(genesets, genelist)
-goat_result = test_genesets(
-  genesets_filtered, genelist, method = "goat", score_type = "effectsize",
-  padj_method = "bonferroni", padj_cutoff = 0.05
-)
+\donttest{
+# note; this example downloads data when first run, and typically takes ~60seconds
+
+# store the downloaded files in the following directory. Here, the temporary file
+# directory is used. Alternatively, consider storing this data in a more permanent location.
+# e.g. output_dir="~/data/goat" on unix systems or output_dir="C:/data/goat" on Windows
+output_dir = tempdir()
+
+## first run the default example from test_genesets() to obtain geneset results
+datasets = download_goat_manuscript_data(output_dir)
+genelist = datasets$`Wingo 2020:mass-spec:PMID32424284`
+genesets_asis = download_genesets_goatrepo(output_dir)
+genesets_filtered = filter_genesets(genesets_asis, genelist)
+result = test_genesets(genesets_filtered, genelist, method = "goat",
+  score_type = "effectsize", padj_method = "bonferroni", padj_cutoff = 0.05)
+
 # subset GO CC results
-x = goat_result |> filter(signif & source == "GO_CC")
+x = result |> filter(signif & source == "GO_CC")
 tm = treemap_data(
   geneset_ids = x$id,
-  genesets = genesets,
+  genesets = genesets_filtered,
   genesets_test_result = x,
   simplify = "leaf_only" # options: none/leaf_only/prune_singletons/pvalue
 )

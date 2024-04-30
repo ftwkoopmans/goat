@@ -27,6 +27,9 @@ Typical settings for this parameter are 0.1~0.5  (0.25 is default)}
 This parameter doesn't do anything if there are fewer than 5 "foreground genes" alltogether.
 Typical settings for this parameter are 0.75~0.95 (0.9 is default)}
 }
+\value{
+the genesets table from the \code{clusters} parameter, with results in column "signif_and_reduced"
+}
 \description{
 Analyses are performed independently per 'source' of genesets. The result of this function is the geneset table with a newly appended column 'signif_and_reduced'
 }
