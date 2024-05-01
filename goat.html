@@ -15,23 +15,23 @@
 	
 		<link href="./_app/immutable/assets/5.990194d5.css" rel="stylesheet">
 		<link href="./_app/immutable/assets/app.c6a029fe.css" rel="stylesheet">
-		<link rel="modulepreload" href="./_app/immutable/entry/start.e8fae46d.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/start.7285f256.js">
 		<link rel="modulepreload" href="./_app/immutable/chunks/scheduler.cd38125d.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.883e24e3.js">
-		<link rel="modulepreload" href="./_app/immutable/entry/app.38273ef3.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.23fff2b2.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/app.ca0077c7.js">
 		<link rel="modulepreload" href="./_app/immutable/chunks/preload-helper.a4192956.js">
 		<link rel="modulepreload" href="./_app/immutable/chunks/index.a6a2bf8f.js">
 		<link rel="modulepreload" href="./_app/immutable/nodes/0.1790fe3c.js">
-		<link rel="modulepreload" href="./_app/immutable/nodes/5.d8c9dd70.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/stores.6185cf64.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/stores.c6ec509e.js"><title>GOAT: Gene set Ordinal Association Test - online gene set enrichment analyses</title><!-- HEAD_svelte-1c16vgc_START --><meta name="description" content="Gene set enrichment analysis for Gene Ontology (GO) or KEGG pathways using the GOAT algorithm webtool. Online data analysis for your preranked gene list from e.g. proteomics or bulk/scRNAseq gene expression studies"><!-- HEAD_svelte-1c16vgc_END -->
+		<link rel="modulepreload" href="./_app/immutable/nodes/5.1804e4ad.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/stores.2a1f2a73.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/stores.bacf73c7.js"><title>GOAT: Gene set Ordinal Association Test - online gene set enrichment analyses</title><!-- HEAD_svelte-acs5yk_START --><meta name="description" content="Gene set enrichment analysis for Gene Ontology (GO) or KEGG pathways using the GOAT algorithm web tool. Online data analysis for your preranked gene list from e.g. proteomics or bulk/scRNAseq gene expression studies"><!-- HEAD_svelte-acs5yk_END -->
 </head>
 
 <body data-sveltekit-preload-data="hover">
-	<div style="display: contents">   <nav><div style="padding: 4px; margin-left: 20px;"><a href="/"><img src="/android-chrome-192x192.png" width="40" height="40" alt="GOAT"></a></div> <a href="/" style="margin-left: 5px;">Home</a> <a href="/goat" style="margin-left: 40px;" class="active">GOAT online</a> <a href="/genemap" style="margin-left: 40px;">gene ID mapping</a> <a href="/docs" style="margin-left: 40px;">Documentation</a></nav> <div tabindex="-1" role="button" aria-pressed="false"><div class="divH1" data-svelte-h="svelte-1ha2qrw"><h1>Online gene set enrichment analysis tool for the GOAT algorithm</h1> <div style="margin: 0px 150px 0px 150px; text-align: center;"><h3>Identify enriched gene sets using GOAT and inspect your results using interactive tables and
-				data visualizations.</h3> <img src="beta.png" width="200px" alt="BETA VERSION"></div></div> <div class="containerSettings"><div class="divH2" data-svelte-h="svelte-1g6dorf"><h2>Gene list</h2></div> <div class="divH3" data-svelte-h="svelte-pa339p"><h3>Load your input data; a table of genes and their p-values / effect sizes.</h3></div> <div class="pnlSettings"><table><tbody><tr><td style="vertical-align: top; width: 300px;"><input id="genelistFileDialog" type="file" accept=".csv,.tsv,.xlsx" multiple="false" style="display: none;"> <div id="genelist_dropzone" tabindex="0" role="button" aria-pressed="false"><p><i data-svelte-h="svelte-17z113x">drag&amp;drop a gene list file or click to open a file dialog</i> <br> <i class="dropicon"></i> </p></div> <div style=""><br> <br> <b data-svelte-h="svelte-jrlymk">status:</b> <br> <div class="alert" data-svelte-h="svelte-10sgbjm">no gene list loaded yet</div></div></td> <td><div class="helpSettings">Importantly, your input gene list / gene table must be prepared in a format that is
+	<div style="display: contents">   <nav><div style="padding: 4px; margin-left: 20px;"><a href="/"><img src="/android-chrome-192x192.png" width="40" height="40" alt="GOAT"></a></div> <a href="/" style="margin-left: 5px;">Home</a> <a href="/goat" style="margin-left: 40px;" class="active">GOAT online</a> <a href="/genemap" style="margin-left: 40px;">gene ID mapping</a> <a href="/docs" style="margin-left: 40px;">Documentation</a></nav> <div tabindex="-1" role="button" aria-pressed="false"><div class="divH1" data-svelte-h="svelte-dmj9cy"><h1>Online gene set enrichment analysis tool for the GOAT algorithm</h1> <div style="margin: 0px 150px 0px 150px; text-align: center;"><h3>Identify enriched gene sets using GOAT and inspect your results using interactive tables and
+				data visualizations.</h3></div></div> <div class="containerSettings"><div class="divH2" data-svelte-h="svelte-1g6dorf"><h2>Gene list</h2></div> <div class="divH3" data-svelte-h="svelte-pa339p"><h3>Load your input data; a table of genes and their p-values / effect sizes.</h3></div> <div class="pnlSettings"><table><tbody><tr><td style="vertical-align: top; width: 300px;"><input id="genelistFileDialog" type="file" accept=".csv,.tsv,.xlsx" multiple="false" style="display: none;"> <div id="genelist_dropzone" tabindex="0" role="button" aria-pressed="false"><p><i data-svelte-h="svelte-17z113x">drag&amp;drop a gene list file or click to open a file dialog</i> <br> <i class="dropicon"></i> </p></div> <div style=""><br> <br> <b data-svelte-h="svelte-jrlymk">status:</b> <br> <div class="alert" data-svelte-h="svelte-10sgbjm">no gene list loaded yet</div></div></td> <td><div class="helpSettings">Importantly, your input gene list / gene table must be prepared in a format that is
 								compatible with this tool. In brief,
-								<ul data-svelte-h="svelte-1pgvdn8"><li>File format: either CSV, TSV or Excel (.xlsx file, data on the first sheet)</li> <li>Required columns (column names must match exactly)</li> <ol><li><b>gene</b>: Human Entrez (NCBI) gene IDs</li> <li><b>symbol</b>: gene symbol</li> <li><b>effectsize</b>: effect size or log2 foldchange</li> <li><b>pvalue</b>: gene p-value (preferably un-adjusted)</li> <li><b>signif</b>: was the adjusted p-value significant?
+								<ul data-svelte-h="svelte-gy1i3o"><li>File format: either CSV, TSV, or Excel (.xlsx file, data on the first sheet)</li> <li>Required columns (column names must match exactly)</li> <ol><li><b>gene</b>: Human Entrez (NCBI) gene IDs</li> <li><b>symbol</b>: gene symbol</li> <li><b>effectsize</b>: effect size or log2 foldchange</li> <li><b>pvalue</b>: gene p-value (preferably un-adjusted)</li> <li><b>signif</b>: was the adjusted p-value significant?
 											<br>(boolean values, i.e. &#39;true&#39; or &#39;false&#39;)</li></ol> <li>No missing/empty values in any of these columns</li></ul>
 
 								Further information and examples are available in the
@@ -54,7 +54,7 @@
 			
 			<script>
 				{
-					__sveltekit_r1wjpv = {
+					__sveltekit_bape4y = {
 						base: new URL(".", location).pathname.slice(0, -1),
 						env: {}
 					};
@@ -64,8 +64,8 @@
 					const data = [null,null];
 
 					Promise.all([
-						import("./_app/immutable/entry/start.e8fae46d.js"),
-						import("./_app/immutable/entry/app.38273ef3.js")
+						import("./_app/immutable/entry/start.7285f256.js"),
+						import("./_app/immutable/entry/app.ca0077c7.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element, {
 							node_ids: [0, 5],
