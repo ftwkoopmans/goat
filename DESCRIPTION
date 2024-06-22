@@ -11,7 +11,7 @@ Authors@R:
 Description:
     Perform gene set enrichment analyses using the Gene set Ordinal
     Association Test (GOAT) algorithm and visualize your
-    results. Koopmans, F. (2024) <doi:10.1101/2023.12.10.570979>.
+    results. Koopmans, F. (2024) <doi:10.1038/s42003-024-06454-5>.
 URL: https://github.com/ftwkoopmans/goat/
 License: Apache License (>= 2)
 Depends:

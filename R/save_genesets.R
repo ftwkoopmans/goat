@@ -184,39 +184,39 @@ methods_text = function(x, genelist, settings) {
 
   # cite R package
   result = paste0(
-    'Geneset analyses\n',
-    'The GOAT R package [doi:10.1101/2023.12.10.570979] (version ', goat_version(),
-    ' , https://github.com/ftwkoopmans/goat ) was used to perform geneset enrichment analyses',
+    'Gene set analyses\n',
+    'The GOAT R package [PMID:38898151] (version ', goat_version(),
+    ', https://github.com/ftwkoopmans/goat ) was used to perform gene set enrichment analyses',
     # algorithm / method
     ' with the ', toupper(method), ' algorithm'
   )
 
   # genesets
   if (is_genesets_go) {
-    result = paste0(result, ' using genesets from the Gene Ontology database [PMID:10802651] (', x$source_version[1], ').')
+    result = paste0(result, ' using gene sets from the Gene Ontology database [PMID:10802651] (', x$source_version[1], '). ')
   } else if (is_genesets_syngo) {
-    result = paste0(result, ' using genesets from the SynGO knowledgebase [PMID:31171447] (', x$source_version[1], ').')
+    result = paste0(result, ' using gene sets from the SynGO knowledgebase [PMID:31171447] (', x$source_version[1], '). ')
   } else {
-    result = paste0(result, ' using genesets from "', x$source_version[1], '".')
+    result = paste0(result, ' using gene sets from "', x$source_version[1], '". ')
   }
 
   # filtering settings
   paste0(
-    result, 'The input genelist contained ', nrow(genelist),
+    result, 'The input gene list contained ', nrow(genelist),
     score_type,
-    ' used to test for enriched genesets that contained at least ',
+    ' used to test for enriched gene sets that contained at least ',
     min_overlap , ' and at most ' , max_overlap , ' genes (or ',
-    round(as.numeric(max_overlap_fraction)*100),'% of the genelist, whichever was smaller) that overlapped with the input genelist. ',
+    round(as.numeric(max_overlap_fraction)*100),'% of the gene list, whichever was smaller) that overlapped with the input gene list. ',
     # multiple testing correction
     'Multiple testing correction was ',
     ifelse(length(usource) > 1,
-           paste0('independently applied per geneset "source" (i.e. ', paste(usource, collapse=", "), ')'),
+           paste0('independently applied per gene set "source" (i.e. ', paste(usource, collapse=", "), ')'),
            'applied'),
     ifelse(tolower(padj_method) == "bonferroni",
            ' using Bonferroni adjustment',
            ' using the Benjamini-Hochberg procedure (FDR)'),
     ifelse(padj_sources == "TRUE" && length(usource) > 1,
-           paste0(' and subsequently all p-values were adjusted (again) using Bonferroni adjustment to account for ',
+           paste0(' and subsequently, all p-values were adjusted (again) using Bonferroni adjustment to account for ',
                   length(usource), ' separate tests across "sources". '),
            '. '),
     'The significance threshold for adjusted p-values was set to ', padj_cutoff, '.\n\n'

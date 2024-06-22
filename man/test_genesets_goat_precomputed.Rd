@@ -23,9 +23,9 @@ input \code{genesets} table with results in the "pvalue", "score_type" columns.
 "zscore" column:
 A standardized z-score is computed from geneset p-values + effectsize direction (up/down) if tested.
 Importantly, we here return standardized z-scores because the GOAT geneset score (mean of gene scores) is relative to the respective geneset-size-matched null distributions (a skewed normal)!
-In contrast, the standardized z-scores are comparable between genesets (as are the pvalues obviously).
+In contrast, the standardized z-scores are comparable between genesets (as are the pvalues).
 
-Only if either (or both) the effectsize-up/down was tested, the direction of regulation has been tested (effectsize_abs and pvalue score types are agnositic to up/down regulation).
+Only if either (or both) the effectsize-up/down was tested, the direction of regulation has been tested (effectsize_abs and pvalue score types are agnostic to up/down regulation).
 So when score_type was set to any of effectsize/effectsize_down/effectsize_up, the z-scores are negative values in case the "score_type" output column is "effectsize_down".
 }
 \description{

@@ -324,8 +324,11 @@ library(ggplot2)
 library(goat) # also loads dplyr
 
 # TODO: setup input/output paths
+file_datasets = "goat_manuscript_datasets.rda" # full path to the datasets prepared earlier. This RData file is available in the "analyses" directory @ github
 output_dir = getwd() # directory where output files should be stored
 load(paste0(output_dir, "/roc_simulations.rda"))
+load(file_datasets)
+
 
 
 ############################################
@@ -564,11 +567,11 @@ for(dataset_name in names(dataset_results)) {
 
 
   p_combined_main = patchwork::wrap_plots(plotlist_main, nrow = 2, byrow = FALSE) +
-    patchwork::plot_annotation(tag_levels = 'A') &
+    patchwork::plot_annotation(tag_levels = 'a') &
     theme(plot.tag = element_text(size = 13))
 
   p_combined_suppl = patchwork::wrap_plots(plotlist_suppl, nrow = 4, byrow = FALSE) +
-    patchwork::plot_annotation(tag_levels = 'A') &
+    patchwork::plot_annotation(tag_levels = 'a') &
     theme(plot.tag = element_text(size = 13))
 
 
@@ -592,7 +595,7 @@ for(dataset_name in names(dataset_results)) {
   }
 
   p_combined_pvaldens = patchwork::wrap_plots(plotlist, nrow = 2, ncol = N, byrow = TRUE, heights = c(1, max(plotlist_pval_dens__npanel))) +
-    patchwork::plot_annotation(tag_levels = 'A') &
+    patchwork::plot_annotation(tag_levels = 'a') &
     theme(plot.tag = element_text(size = 13, hjust = 1))
 
   ggsave(paste0(x$output_file_prefix, "__roc_simulations__pvalue-density.pdf"), plot = p_combined_pvaldens, width = 8.5,

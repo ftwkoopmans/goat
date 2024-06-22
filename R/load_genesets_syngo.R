@@ -8,7 +8,7 @@
 #' - call this function with the full file path to the 'syngo_ontologies.xlsx' file
 #' @examples
 #'   # TODO: update the filename to your downloaded file
-#'   f = "C:/DATA/SynGO_bulk_download_release_20210225/syngo_ontologies.xlsx"
+#'   f = "C:/DATA/SynGO_bulk_download_release_20231201/syngo_ontologies.xlsx"
 #'   if(file.exists(f)) genesets_asis = load_genesets_syngo(f)
 #' @param filename full path to the "syngo_ontologies.xlsx" file that was extracted from a SynGO bulk download ZIP archive
 #' @param gene_database gene IDs to return. must be any of; "entrez" (default), "hgnc", "ensembl"

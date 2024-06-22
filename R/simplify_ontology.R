@@ -77,7 +77,7 @@ treemap_plot = function(x, label_group = FALSE) {
 #' @param genesets entire geneset table; typically the complete GO database
 #' @param genesets_test_result geneset testing results; the output from `test_genesets()`
 #' @param simplify strategy for reducing the genesets returned in the treemap. Options;
-#' "leaf_only" (most stringent, returns only leafs in the tree structure)
+#' "leaf_only" (most stringent, returns only leaves in the tree structure)
 #' "prune_singletons" (remove parent terms that have exactly 1 child)
 #' "pvalue" (remove parent terms where the child term p-value is at least 4 times better)
 #' "none" (default; return all significant genesets that are not a "grouping term" in the treemap)
@@ -315,7 +315,7 @@ ontology_data_structures = function(geneset_ids, genesets, genesets_test_result)
 #' - restructure treemap data into format suitable for plotting
 #' @param ods result from `ontology_data_structures()`
 #' @param simplify strategy for reducing the genesets returned in the treemap. Options;
-#' "leaf_only" (most stringent, returns only leafs in the tree structure)
+#' "leaf_only" (most stringent, returns only leaves in the tree structure)
 #' "prune_singletons" (remove parent terms that have exactly 1 child)
 #' "pvalue" (remove parent terms where the child term p-value is at least 4 times better)
 #' "none" (default; return all significant genesets that are not a "grouping term" in the treemap)
@@ -332,7 +332,7 @@ build_treemap = function(ods, simplify = "none", toplevel_max_ngenes = Inf) {
   if(simplify == "leaf_only") {
     shortlist = setdiff(unique(ods$dag_edgelist$child), unique(ods$dag_edgelist$parent))
   } else if(simplify == "prune_singletons") {
-    # only retain nodes that have more or less (leafs) than 1 child
+    # only retain nodes that have more or less (leaves) than 1 child
     shortlist = setdiff(ods$geneset_ids, ods$dag_edgelist |> count(parent) |> filter(n==1) |> pull(parent))
   } else if(simplify == "pvalue") {
     # remove parents where pvalues is not at least X times better than child pvalue
@@ -379,7 +379,7 @@ build_treemap = function(ods, simplify = "none", toplevel_max_ngenes = Inf) {
       i_shortlist = setdiff(i_shortlist, shortlist_done) # skip already done
     } else {
       # current term is not on the shortlist
-      # find most-specific child that covers the same number of leafs
+      # find most-specific child that covers the same number of leaves
       i_shortlist = setdiff(obj$recursiveChildrenShortlist, shortlist_done) # skip already done
       if(length(i_shortlist) > 0) {
         # deal with top-level terms that have only 1 child (which may also have only 1 child, etc.)

@@ -25,6 +25,6 @@ Workflow;
 }
 \examples{
   # TODO: update the filename to your downloaded file
-  f = "C:/DATA/SynGO_bulk_download_release_20210225/syngo_ontologies.xlsx"
+  f = "C:/DATA/SynGO_bulk_download_release_20231201/syngo_ontologies.xlsx"
   if(file.exists(f)) genesets_asis = load_genesets_syngo(f)
 }

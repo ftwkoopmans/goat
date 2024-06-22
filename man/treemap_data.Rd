@@ -20,7 +20,7 @@ treemap_data(
 \item{genesets_test_result}{geneset testing results; the output from \code{test_genesets()}}
 
 \item{simplify}{strategy for reducing the genesets returned in the treemap. Options;
-"leaf_only" (most stringent, returns only leafs in the tree structure)
+"leaf_only" (most stringent, returns only leaves in the tree structure)
 "prune_singletons" (remove parent terms that have exactly 1 child)
 "pvalue" (remove parent terms where the child term p-value is at least 4 times better)
 "none" (default; return all significant genesets that are not a "grouping term" in the treemap)}
