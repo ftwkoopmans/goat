@@ -133,12 +133,14 @@ load_genesets_go_bioconductor = function(include_child_annotations = TRUE) {
 #' @param file_gene2go full path to the gene2go file from NCBI. Also works with the gzipped file gene2go.gz
 #' @param file_goobo full path to the OBO file from geneontology.org
 #' @param include_child_annotations boolean; include annotations against child terms? In most situations, TRUE (default) is the desired setting
+#' @param taxid_filter filter to a specific taxonomy [default: 9606 homo sapiens]
 #' @return table with columns; source (character), source_version (character), id (character), name (character), genes (list), ngenes (int)
 #' @export
-load_genesets_go_fromfile = function(file_gene2go, file_goobo, include_child_annotations = TRUE) {
+load_genesets_go_fromfile = function(file_gene2go, file_goobo, include_child_annotations = TRUE,
+                                     taxid_filter=9606) {
   genes = parent_id_recursive = namespace = source_version = name = ngenes = parent_id = NULL # fix invisible bindings R package NOTE
   # parse input data
-  gene2go = go_gene2go(file_gene2go, taxid_filter = 9606)
+  gene2go = go_gene2go(file_gene2go, taxid_filter = taxid_filter)
   go = go_obo(file_goobo, rename_namespace = TRUE, remove_obsolete = TRUE)
 
   # gene*term pairs (direct annotations)
