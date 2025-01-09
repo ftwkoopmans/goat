@@ -73,9 +73,8 @@ test_genesets_goat_precomputed = function(genesets, genelist, score_type) {
   validate_goat_genelist(genelist, score_type)
   validate_goat_genesets(genesets, nrow(genelist))
 
-  # specifically grab the null distribution data we bundled with the R package. Calling get() explicitly ensures
-  # we get a useful error message when something goes wrong
-  goat_null = get("goat_nulldistributions", asNamespace('goat'))
+  # specifically grab the null distribution data we bundled with the R package
+  goat_null = goat::goat_nulldistributions
 
   ### compute null distribution parameters
   geneset_usize = sort(unique(genesets$ngenes), decreasing = FALSE)
