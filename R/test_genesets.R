@@ -39,7 +39,7 @@
 #' @param genesets tibble with genesets, must contain columns 'source', 'source_version', 'id', 'name', 'genes', 'ngenes', 'ngenes_signif'
 #' @param genelist tibble with genes, must contain column 'gene' and 'test'. gene = character column, which are matched against list column 'genes' in genesets tibble. test = boolean column (you can set all to FALSE if not performing Fisher-exact or hypergeometric test downstream)
 #' @param method method for overrepresentation analysis. Options: "goat", "hypergeometric", "fisherexact", "fisherexact_ease", "gsea", "idea"
-#' @param score_type string, default: "effectsize", alternatively set to "pvalue"
+#' @param score_type string, default: "effectsize", alternatively set to "pvalue", "effectsize_up", "effectsize_down", "effectsize_abs"
 #' @param padj_method first step of multiple testing correction; method for p-value adjustment, passed to `stats::p.adjust()` via `padjust_genesets()`, e.g. set "BH" to compute FDR adjusted p-values (default) or "bonferroni" for a more stringent procedure
 #' @param padj_sources second step of multiple testing correction; apply Bonferroni adjustment to all p-values according to the number of geneset sources that were tested. Boolean parameter, set TRUE to enable (default) or FALSE to disable
 #' @param padj_cutoff cutoff for adjusted p-value, `signif` column is set to TRUE for all values lesser-equals
