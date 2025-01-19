@@ -1,24 +1,49 @@
 
-#' human gene (NCBI entrez ID) annotations from the GO database using the 'org.Hs.eg.db' Bioconductor package
+#' Load GO annotations via Bioconductor packages (e.g. org.Hs.eg.db for Human)
 #'
 #' @description
 #' Download and import genesets from the GO database using the Bioconductor infrastructure.
 #' Use the `goat::load_genesets_go_fromfile` function for more fine-grained control over the GO database version that you use; it allows you to import NCBI gene2go files
 #'
 #' @details
-#' Note that org.Hs.eg.db pulls data semi-annually from NCBI gene2go,
+#' Note that org.Hs.eg.db pulls data semi-annually from NCBI gene2go (as do similar databases for other species),
 #' but the GO database version returned by this function is tied to the version of the org.Hs.eg.db on your computer (this is controlled by the Bioconductor infrastructure).
+#' E.g. in an outdated R installation you may get outdated GO annotations as well.
 #'
 #' The actual GO database version that is retrieved is returned by this function in the `source_version` column.
 #' @param include_child_annotations boolean; include annotations against child terms? In most situations, TRUE (default) is the desired setting
+#' @param taxid integer value that indicates the taxonomy id. Default: 9606 (Human, Homo sapiens). Currently supported options:
+#'
+#' * 9606 = Human (Homo sapiens)
+#' * 9598 = Chimpanzee (Pan troglodytes)
+#' * 9544 = Rhesus monkey (Macaca mulatta)
+#' * 10090 = Mouse (Mus musculus)
+#' * 10116 = Rat (Rattus norvegicus)
+#' * 7955 = Zebrafish (Danio rerio)
+#' * 7227 = Fruit fly (Drosophila melanogaster)
+#' * 6239 = Worm (Caenorhabditis elegans)
 #' @return table with columns; source (character), source_version (character), id (character), name (character), genes (list), ngenes (int)
 #' @export
-load_genesets_go_bioconductor = function(include_child_annotations = TRUE) {
+load_genesets_go_bioconductor = function(include_child_annotations = TRUE, taxid = 9606) {
   genes = go_id = GOID = TERM = ONTOLOGY = go_domain = source_version = go_name = ngenes = parent_id = child_id = relation = name = NULL # fix invisible bindings R package NOTE
+
+  ### input validation
+  stopifnot("include_child_annotations parameter should be a single boolean value" = length(include_child_annotations) == 1 && include_child_annotations %in% c(TRUE, FALSE))
+  stopifnot("taxid parameter should be a single positive integer value" = length(taxid) == 1 && is.numeric(taxid) && is.finite(taxid) && taxid > 0)
+
+  taxid_lookup = taxonomy_identifiers()
+  taxid = as.integer(taxid) # enforce integer type, also deals with rounding etc.
+  stopifnot("provided taxid parameter is not supported by this function, c.f. function parameter documentation" = taxid %in% taxid_lookup$taxonomy_id)
+
+  taxid_info = taxid_lookup[match(taxid, taxid_lookup$taxonomy_id), ] # always yields exactly 1 row, because upstream we validated taxid is in this table
+  stopifnot("failed to match input taxid against the table from taxonomy_identifiers()" = nrow(taxid_info) == 1)
   check_dependency("AnnotationDbi", "loading GO data via Bioconductor")
   check_dependency("GO.db", "loading GO data via Bioconductor")
-  check_dependency("org.Hs.eg.db", "loading GO data via Bioconductor")
+  check_dependency(taxid_info$bioconductor_package, paste("loading", taxid_info$common_name, "GO species database via Bioconductor"))
 
+  # get the database object from the respective bioconductor package
+  ORG_ES_DB = eval(parse(text = paste0(taxid_info$bioconductor_package, "::", taxid_info$bioconductor_package))) # this is basically; ORG_ES_DB=org.Hs.eg.db::org.Hs.eg.db
+  # dev note: alternatively, use require() then get() but note that this may fail in some cases, e.g. after updating packages in the same session
 
   ### Bioconductor GO terms and respective annotations (Entrez gene format)
 
@@ -28,10 +53,27 @@ load_genesets_go_bioconductor = function(include_child_annotations = TRUE) {
   keys = setdiff(unique(go_terms$GOID), c("GO:0003674", "GO:0008150", "GO:0005575")) # exclude top-level ontologies like "molecular function" and CC/BP counterparts (basically entire realm)
   # bugfix; previously we used `AnnotationDbi::keys(org.Hs.eg.db::org.Hs.eg.db, "GO")` to extract all unique GO term IDs but this seems to be bugged; it leaves out many legit terms (e.g. ribosomal subunit GO:0044391) that do have annotations in org.Hs.eg.db::org.Hs.eg.db !
   # extract annotations
-  go_annotations_entrez = suppressMessages(AnnotationDbi::mapIds(org.Hs.eg.db::org.Hs.eg.db, keys = keys, column = "ENTREZID", keytype = ifelse(include_child_annotations, "GOALL", "GO"), multiVals = "list"))
-  # GO DB version
-  go_annotations_metadata = AnnotationDbi::metadata(org.Hs.eg.db::org.Hs.eg.db)
-  go_annotations_metadata = paste(go_annotations_metadata$value[match(c("GOSOURCENAME", "ORGANISM", "GOSOURCEDATE"), go_annotations_metadata$name)], collapse = " - ")
+  go_annotations_entrez = suppressMessages(AnnotationDbi::mapIds(ORG_ES_DB, keys = keys, column = "ENTREZID", keytype = ifelse(include_child_annotations, "GOALL", "GO"), multiVals = "list"))
+  # extract all metadata from the org.XX.eg.db package
+  go_annotations_metadata_table = AnnotationDbi::metadata(ORG_ES_DB)
+  go_annotations_metadata_table = go_annotations_metadata_table[
+    !is.na(go_annotations_metadata_table$name) & nchar(go_annotations_metadata_table$name) >= 2 &
+      !is.na(go_annotations_metadata_table$value) & nchar(go_annotations_metadata_table$value) >= 2, ] # remove rows without data/information
+  # find the organism in the source data. Not strictly needed because we know the taxonomy, but good validation if there are problems with source data
+  # if available use ORGANISM, fallback is SPECIES, otherwise enter the requested species
+  source_organism = stats::na.omit(go_annotations_metadata_table$value[match(c("ORGANISM", "SPECIES"), toupper(go_annotations_metadata_table$name))])
+  if(length(source_organism) == 0) {
+    source_organism = taxid_info$scientific_name
+  }
+  # in older versions of all species databases, GOSOURCEDATE is always present but unfortunately more recent versions do not include the actual GO source date !
+  # For example, org.Mm.eg.db version 2024-Sep20 has an empty value for the GOSOURCEDATE field !
+  source_version = stats::na.omit(go_annotations_metadata_table$value[match(c("GOSOURCEDATE", "GOEGSOURCEDATE", "EGSOURCEDATE", "UPSOURCEDATE"), toupper(go_annotations_metadata_table$name))])
+  if(length(source_version) == 0) {
+    source_version = "version/date not described in Bioconductor package"
+    print(go_annotations_metadata_table)
+  }
+
+  go_annotations_metadata = paste0(taxid_info$bioconductor_package, " - ", source_organism[1], " - ", source_version[1]) # take first element from all available organism/version data
 
 
   ### convert Bioconductor data into a table compatible with this R package
@@ -130,15 +172,23 @@ load_genesets_go_bioconductor = function(include_child_annotations = TRUE) {
 #'   if(file.exists(file_gene2go) && file.exists(file_goobo)) {
 #'     genesets_asis = load_genesets_go_fromfile(file_gene2go, file_goobo)
 #'   }
-#' @param file_gene2go full path to the gene2go file from NCBI. Also works with the gzipped file gene2go.gz
-#' @param file_goobo full path to the OBO file from geneontology.org
+#' @param file_gene2go full path to the gene2go file from NCBI. Also works with a gzipped file; gene2go.gz
+#' @param file_goobo full path to the OBO file from geneontology.org. Also works with a gzipped file; obo.gz
 #' @param include_child_annotations boolean; include annotations against child terms? In most situations, TRUE (default) is the desired setting
-#' @param taxid_filter filter to a specific taxonomy [default: 9606 homo sapiens]
+#' @param taxid_filter return gene annotations only for the specified taxonomy identifier (integer value). Typical options are 9606 (Human, the default) or 10090 (mouse). Importantly, select the taxonomy/organism that is also in your input gene list (which typically contains human Entrez gene identifiers)
 #' @return table with columns; source (character), source_version (character), id (character), name (character), genes (list), ngenes (int)
 #' @export
-load_genesets_go_fromfile = function(file_gene2go, file_goobo, include_child_annotations = TRUE,
-                                     taxid_filter=9606) {
+load_genesets_go_fromfile = function(file_gene2go, file_goobo, include_child_annotations = TRUE, taxid_filter = 9606) {
   genes = parent_id_recursive = namespace = source_version = name = ngenes = parent_id = NULL # fix invisible bindings R package NOTE
+
+  # input validation
+  stopifnot("include_child_annotations parameter should be a single boolean value" = length(include_child_annotations) == 1 && include_child_annotations %in% c(TRUE, FALSE))
+  stopifnot("taxid_filter parameter should be a single positive integer value" = length(taxid_filter) == 1 && is.numeric(taxid_filter) && is.finite(taxid_filter) && taxid_filter > 0)
+  stopifnot("file_gene2go parameter should be a single string (full path to respective file)" = length(file_gene2go) == 1 && !is.na(file_gene2go) && is.character(file_gene2go) && nchar(file_gene2go) > 0)
+  stopifnot("file_goobo parameter should be a single string (full path to respective file)" = length(file_goobo) == 1 && !is.na(file_goobo) && is.character(file_goobo) && nchar(file_goobo) > 0)
+  if(!file.exists(file_gene2go)) stop(paste("cannot find input file:", file_gene2go))
+  if(!file.exists(file_goobo)) stop(paste("cannot find input file:", file_goobo))
+
   # parse input data
   gene2go = go_gene2go(file_gene2go, taxid_filter = taxid_filter)
   go = go_obo(file_goobo, rename_namespace = TRUE, remove_obsolete = TRUE)
@@ -199,11 +249,14 @@ load_genesets_go_fromfile = function(file_gene2go, file_goobo, include_child_ann
 #'
 #' @description note that this file lacks parent/child relations, so we only learn 'direct annotations'
 #' @param f full path to gene2go file stored on the computer, e.g. previously downloaded from https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz
-#' @param taxid_filter taxonomy id, integer
+#' @param taxid_filter return gene annotations only for the specified taxonomy identifier (integer value). Typical options are 9606 (Human, the default) or 10090 (mouse). Importantly, select the taxonomy/organism that is also in your input gene list (which typically contains human Entrez gene identifiers)
 #' @return a tibble with columns; source, source_version, id, name, genes, ngenes
 #' @export
 go_gene2go = function(f, taxid_filter = 9606) {
   taxid = qualifier = goid = goterm = geneid = category = genes = source_version = name = ngenes = NULL # fix invisible bindings R package NOTE
+  stopifnot("taxid_filter parameter should be a single positive integer value" = length(taxid_filter) == 1 && is.numeric(taxid_filter) && is.finite(taxid_filter) && taxid_filter > 0)
+  stopifnot("f parameter should be a single string (full path to respective file)" = length(f) == 1 && !is.na(f) && is.character(f) && nchar(f) > 0)
+  if(!file.exists(f)) stop(paste("cannot find input file:", f))
 
   gene2go = data.table::fread(f, data.table = FALSE, showProgress = FALSE)
   # for robustness against future changes, e.g. colnames changing 'case'
@@ -285,7 +338,7 @@ go_find_parents = function(child, parent) {
 #' The only supported relations are those that match this regex;
 #' `"^(is_a:|relationship: part_of|relationship: regulates|relationship: positively_regulates|relationship: negatively_regulates)"`
 #'
-#' @param f full path to go.obo file stored on the computer, e.g. previously downloaded from http://current.geneontology.org/ontology/go.obo
+#' @param f full path to go.obo file stored on the computer, e.g. previously downloaded from http://current.geneontology.org/ontology/go.obo . Also works with a gzipped file; obo.gz
 #' @param rename_namespace boolean; rename official namespace values like 'cellular_component' to CC? (analogous for BP and MF)
 #' @param remove_obsolete boolean; remove obsoleted terms?
 #' @return tibble with ontology terms and their relations
@@ -294,8 +347,16 @@ go_obo = function(f, rename_namespace = TRUE, remove_obsolete = TRUE) {
   group = lines = isterm = isid = isname = isdef = isnamespace = isobsolete = isrelationship = isparentlink = NULL # fix invisible bindings R package NOTE
   id = name = definition = namespace = obsolete = qc = parent_id = parent_namespace = parent = parent_id_recursive = NULL # fix invisible bindings R package NOTE
 
+  stopifnot("rename_namespace parameter should be a single boolean value" = length(rename_namespace) == 1 && rename_namespace %in% c(TRUE, FALSE))
+  stopifnot("remove_obsolete parameter should be a single boolean value" = length(remove_obsolete) == 1 && remove_obsolete %in% c(TRUE, FALSE))
+  stopifnot("f parameter should be a single string (full path to respective file)" = length(f) == 1 && !is.na(f) && is.character(f) && nchar(f) > 0)
+  if(!file.exists(f)) stop(paste("cannot find input file:", f))
+
   go = tibble::tibble(
-    lines = readLines(f, warn = FALSE),
+    # instead of `readLines(f, warn = FALSE)` we here use data.table to read all lines (`sep=NULL` to read everything in a single column)
+    # this is fast, has the advantage that we can read .gz compressed input files, does not require additional dependencies (we already use data.table in other functions)
+    lines = data.table::fread(f, sep = NULL, colClasses = "character", header = FALSE, encoding = "UTF-8", stringsAsFactors = FALSE, data.table = FALSE)[,1],
+    # lines = readLines(f, warn = FALSE),
     group = cumsum(as.integer(grepl("^\\[", lines))),
     isterm = lines == "[Term]",
     isid = grepl("^id:", lines),

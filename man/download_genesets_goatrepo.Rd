@@ -7,7 +7,7 @@
 download_genesets_goatrepo(
   output_dir,
   type = "GO",
-  version = "2024-01-01",
+  version = "",
   ignore_cache = FALSE
 )
 }
@@ -17,7 +17,7 @@ e.g. \code{output_dir="~/data"} on unix systems, \code{output_dir="C:/data"} on 
 
 \item{type}{the type of genesets to download. Currently, only "GO" is supported (default)}
 
-\item{version}{the dataset version. This must be a date in format YYYY-MM-DD. Example: "2024-01-01" (default). View all available versions at https://github.com/ftwkoopmans/goat/tree/data}
+\item{version}{the dataset version. This must be a date in format YYYY-MM-DD (for example; "2024-01-01") OR be left empty (NA or empty string, the default) to automatically download the latest version.}
 
 \item{ignore_cache}{boolean, set to TRUE to force re-download and ignore cached data, if any. Default: FALSE}
 }
@@ -32,12 +32,13 @@ If users are on an R version that is a few years old, so will the GO data from B
 As an alternative, we store gene2go data from NCBI (for Human genes only!) at the GOAT GitHub repository.
 This function allows for a convenient way to download this data and then parse the genesets.
 
-Alternatively you can browse the file in the data branch of the GOAT GitHub repository and download these files manually,
+Alternatively you can browse the files in the data branch of the GOAT GitHub repository and download these files manually,
 then load them via the GOAT R function \code{load_genesets_go_fromfile()}.
+To view these data, open this URL in a browser; https://github.com/ftwkoopmans/goat/tree/data
+You can also use this R package to see all available data via \code{available_genesets_goatrepo()}
 
-To view all available data you can open this URL in a browser; https://github.com/ftwkoopmans/goat/tree/data
-
-New data is automatically added biannually. The first available version is 2024-01-01, the next 2024-06-01, then 2025-01-01, and so on.
+By default (empty \code{version} parameter), this function will first check the online GOAT GitHub repository to find the
+most recent version/date, then download the respective data.
 }
 \examples{
 \donttest{
@@ -48,9 +49,9 @@ New data is automatically added biannually. The first available version is 2024-
 # e.g. output_dir="~/data/go" on unix systems or output_dir="C:/data/go" on Windows
 output_dir = tempdir()
 
-# download data files with GO annotations, version 2024-01-01 (default parameter)
+# download data files with GO annotations (note that the release/date is printed to console)
 # these are then parsed with the load_genesets_go_fromfile() function
-# if the files are already available at output_dir, the download step is skipped
+# if the files are already available at output_dir, these are used and download is skipped
 genesets_asis = download_genesets_goatrepo(output_dir)
 
 ### for a basic example on how to use the data obtain here,

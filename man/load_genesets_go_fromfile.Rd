@@ -7,15 +7,18 @@
 load_genesets_go_fromfile(
   file_gene2go,
   file_goobo,
-  include_child_annotations = TRUE
+  include_child_annotations = TRUE,
+  taxid_filter = 9606
 )
 }
 \arguments{
-\item{file_gene2go}{full path to the gene2go file from NCBI. Also works with the gzipped file gene2go.gz}
+\item{file_gene2go}{full path to the gene2go file from NCBI. Also works with a gzipped file; gene2go.gz}
 
-\item{file_goobo}{full path to the OBO file from geneontology.org}
+\item{file_goobo}{full path to the OBO file from geneontology.org. Also works with a gzipped file; obo.gz}
 
 \item{include_child_annotations}{boolean; include annotations against child terms? In most situations, TRUE (default) is the desired setting}
+
+\item{taxid_filter}{return gene annotations only for the specified taxonomy identifier (integer value). Typical options are 9606 (Human, the default) or 10090 (mouse). Importantly, select the taxonomy/organism that is also in your input gene list (which typically contains human Entrez gene identifiers)}
 }
 \value{
 table with columns; source (character), source_version (character), id (character), name (character), genes (list), ngenes (int)

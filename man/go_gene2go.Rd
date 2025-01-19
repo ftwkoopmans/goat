@@ -9,7 +9,7 @@ go_gene2go(f, taxid_filter = 9606)
 \arguments{
 \item{f}{full path to gene2go file stored on the computer, e.g. previously downloaded from https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz}
 
-\item{taxid_filter}{taxonomy id, integer}
+\item{taxid_filter}{return gene annotations only for the specified taxonomy identifier (integer value). Typical options are 9606 (Human, the default) or 10090 (mouse). Importantly, select the taxonomy/organism that is also in your input gene list (which typically contains human Entrez gene identifiers)}
 }
 \value{
 a tibble with columns; source, source_version, id, name, genes, ngenes

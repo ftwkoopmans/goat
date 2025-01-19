@@ -155,3 +155,25 @@ string_trunc_right = function(string, width, trim_left = FALSE) {
   }
   string
 }
+
+
+
+#' Lookup table for taxonomy identifiers, their names and respective Bioconductor packages
+#'
+#' To prevent adding a huge number of dependencies to this R package,
+#' as the respective bioconductor_package also has to be added to the DESCRIPTION > Suggests,
+#' we've only included the limited set of commonly used organisms.
+#'
+#' @export
+taxonomy_identifiers = function() {
+  x = data.frame(
+    taxonomy_id = as.integer(c(9606, 9598, 9544, 10090, 10116, 7955, 7227, 6239)),
+    common_name = c("Human", "Chimpanzee", "Rhesus monkey", "Mouse", "Rat", "Zebrafish", "Fruit fly", "Worm"),
+    scientific_name = c("Homo sapiens", "Pan troglodytes", "Macaca mulatta", "Mus musculus", "Rattus norvegicus", "Danio rerio", "Drosophila melanogaster", "Caenorhabditis elegans"),
+    full_name = "",
+    bioconductor_package = c("org.Hs.eg.db", "org.Pt.eg.db", "org.Mmu.eg.db", "org.Mm.eg.db", "org.Rn.eg.db", "org.Dr.eg.db", "org.Dm.eg.db", "org.Ce.eg.db"),
+    stringsAsFactors = FALSE
+  )
+  x$full_name = paste0(x$common_name, " (", x$scientific_name, ")")
+  return(x)
+}

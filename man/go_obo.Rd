@@ -7,7 +7,7 @@
 go_obo(f, rename_namespace = TRUE, remove_obsolete = TRUE)
 }
 \arguments{
-\item{f}{full path to go.obo file stored on the computer, e.g. previously downloaded from http://current.geneontology.org/ontology/go.obo}
+\item{f}{full path to go.obo file stored on the computer, e.g. previously downloaded from http://current.geneontology.org/ontology/go.obo . Also works with a gzipped file; obo.gz}
 
 \item{rename_namespace}{boolean; rename official namespace values like 'cellular_component' to CC? (analogous for BP and MF)}
 

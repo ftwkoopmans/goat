@@ -140,6 +140,11 @@ save_genesets = function(x, genelist, filename, arrange_genes = TRUE) {
         filename_log
       )
     }
+
+    # in addition to the user-friendly csv/tsv/xlsx output table, write objects to RData file
+    # (so users can easily load previous results, from possibly another GOAT version, into R and apply plotting functions without re-running GOAT)
+    result = x
+    save(result, genelist, file = sub("\\.[^.]+$", ".rda", filename, ignore.case = TRUE), compress = TRUE)
   }
 }
 

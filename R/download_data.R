@@ -71,12 +71,13 @@ download_goat_manuscript_data = function(output_dir, ignore_cache = FALSE) {
 #' As an alternative, we store gene2go data from NCBI (for Human genes only!) at the GOAT GitHub repository.
 #' This function allows for a convenient way to download this data and then parse the genesets.
 #'
-#' Alternatively you can browse the file in the data branch of the GOAT GitHub repository and download these files manually,
+#' Alternatively you can browse the files in the data branch of the GOAT GitHub repository and download these files manually,
 #' then load them via the GOAT R function `load_genesets_go_fromfile()`.
+#' To view these data, open this URL in a browser; https://github.com/ftwkoopmans/goat/tree/data
+#' You can also use this R package to see all available data via `available_genesets_goatrepo()`
 #'
-#' To view all available data you can open this URL in a browser; https://github.com/ftwkoopmans/goat/tree/data
-#'
-#' New data is automatically added biannually. The first available version is 2024-01-01, the next 2024-06-01, then 2025-01-01, and so on.
+#' By default (empty `version` parameter), this function will first check the online GOAT GitHub repository to find the
+#' most recent version/date, then download the respective data.
 #'
 #' @examples \donttest{
 #' # note: this example will download 2 files of approx 10MB in total
@@ -86,9 +87,9 @@ download_goat_manuscript_data = function(output_dir, ignore_cache = FALSE) {
 #' # e.g. output_dir="~/data/go" on unix systems or output_dir="C:/data/go" on Windows
 #' output_dir = tempdir()
 #'
-#' # download data files with GO annotations, version 2024-01-01 (default parameter)
+#' # download data files with GO annotations (note that the release/date is printed to console)
 #' # these are then parsed with the load_genesets_go_fromfile() function
-#' # if the files are already available at output_dir, the download step is skipped
+#' # if the files are already available at output_dir, these are used and download is skipped
 #' genesets_asis = download_genesets_goatrepo(output_dir)
 #'
 #' ### for a basic example on how to use the data obtain here,
@@ -97,13 +98,14 @@ download_goat_manuscript_data = function(output_dir, ignore_cache = FALSE) {
 #' @param output_dir full path to the directory where the downloaded files should be stored. Directory is created if it does not exist.
 #' e.g. `output_dir="~/data"` on unix systems, `output_dir="C:/data"` on Windows, or set to `output_dir=getwd()` to write output to the current working directory
 #' @param type the type of genesets to download. Currently, only "GO" is supported (default)
-#' @param version the dataset version. This must be a date in format YYYY-MM-DD. Example: "2024-01-01" (default). View all available versions at https://github.com/ftwkoopmans/goat/tree/data
+#' @param version the dataset version. This must be a date in format YYYY-MM-DD (for example; "2024-01-01") OR be left empty (NA or empty string, the default) to automatically download the latest version.
 #' @param ignore_cache boolean, set to TRUE to force re-download and ignore cached data, if any. Default: FALSE
 #' @return result from respective geneset parser function. e.g. if parameter `type` was set to"GO" (default), this function returns the result of `load_genesets_go_fromfile()`. These data returned by this function is typically used as input for `filter_genesets()`, c.f. full example at documentation for test_genesets()
 #' @export
-download_genesets_goatrepo = function(output_dir, type = "GO", version = "2024-01-01", ignore_cache = FALSE) {
+download_genesets_goatrepo = function(output_dir, type = "GO", version = "", ignore_cache = FALSE) {
   stopifnot("parameter type must be a single string. The only supported option for now is 'GO' (default)" = length(type) == 1 && is.character(type) && !is.na(type) && type %in% c("GO"))
-  stopifnot("parameter version must be a single string that represents a date, see function documentation" = length(version) == 1 && is.character(version) && !is.na(version) && grepl("^\\d\\d\\d\\d\\-\\d\\d-\\d\\d$", version))
+  stopifnot("parameter version must be a single string that represents a date (indicates a version/release), or be left empty in order to automatically download the latest version" =
+              length(version) == 1 && (!is.na(version) || (is.character(version) && (version == "" || grepl("^\\d\\d\\d\\d\\-\\d\\d-\\d\\d$", version)))) )
   stopifnot("parameter output_dir must be a single string and represent a directory on your computer" = length(output_dir) == 1 && is.character(output_dir) && !is.na(output_dir))
   stopifnot("parameter ignore_cache must be a single boolean value" = length(ignore_cache) == 1 && ignore_cache %in% c(TRUE, FALSE))
 
@@ -116,6 +118,13 @@ download_genesets_goatrepo = function(output_dir, type = "GO", version = "2024-0
   }
 
   if(type == "GO") {
+    # if no version is provided, first download an overview of all available versions and identify the latest release
+    if(is.na(version) || version == "") {
+      all_versions = available_genesets_goatrepo()
+      version = sort(unique(all_versions$date), decreasing = TRUE)[1] # sort all dates, take largest value
+      message(paste("the most recent available is version:", version))
+    }
+
     file_g2g = sprintf("%s/gene2go_%s.gz", output_dir, version)
     file_obo = sprintf("%s/go_%s.obo.gz", output_dir, version)
     url_g2g = sprintf("https://github.com/ftwkoopmans/goat/raw/data/go/%s/gene2go_human_%s.gz", version, version)
@@ -157,3 +166,22 @@ download_genesets_goatrepo = function(output_dir, type = "GO", version = "2024-0
 }
 
 
+
+#' Discover available geneset collections from the GOAT GitHub repository
+#'
+#' @description
+#' Yields a table that describes available gene sets. You can download the actual data for the described versions with `download_genesets_goatrepo()`.
+#' @export
+available_genesets_goatrepo = function() {
+  url = "https://github.com/ftwkoopmans/goat/raw/data/go/index.tsv"
+  message(paste("downloading", url, "..."))
+  x = data.table::fread(url, colClasses = "character", data.table = FALSE)
+  if(length(x) < 2 || !is.data.frame(x) || nrow(x) == 0) {
+    stop(paste("failed to download", url))
+  }
+  if(ncol(x) != 2 || !all(colnames(x) %in% c("date", "file"))) {
+    print(x)
+    stop("downloaded table should contain exactly 2 columns, with column names 'date' and 'file'")
+  }
+  return(tibble::as_tibble(x))
+}

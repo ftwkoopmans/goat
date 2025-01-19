@@ -1,7 +1,7 @@
 Package: goat
 Type: Package
 Title: Gene Set Analysis Using the Gene Set Ordinal Association Test
-Version: 1.0
+Version: 1.1
 Authors@R:
     person(given = "Frank",
            family = "Koopmans",
@@ -37,6 +37,13 @@ Suggests:
     AnnotationDbi,
     GO.db,
     org.Hs.eg.db,
+    org.Pt.eg.db,
+    org.Mmu.eg.db,
+    org.Mm.eg.db,
+    org.Rn.eg.db,
+    org.Dr.eg.db,
+    org.Dm.eg.db,
+    org.Ce.eg.db,
     fgsea,
     testthat (>= 3.0.0)
 LinkingTo: Rcpp

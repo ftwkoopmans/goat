@@ -2,12 +2,24 @@
 % Please edit documentation in R/load_genesets_go.R
 \name{load_genesets_go_bioconductor}
 \alias{load_genesets_go_bioconductor}
-\title{human gene (NCBI entrez ID) annotations from the GO database using the 'org.Hs.eg.db' Bioconductor package}
+\title{Load GO annotations via Bioconductor packages (e.g. org.Hs.eg.db for Human)}
 \usage{
-load_genesets_go_bioconductor(include_child_annotations = TRUE)
+load_genesets_go_bioconductor(include_child_annotations = TRUE, taxid = 9606)
 }
 \arguments{
 \item{include_child_annotations}{boolean; include annotations against child terms? In most situations, TRUE (default) is the desired setting}
+
+\item{taxid}{integer value that indicates the taxonomy id. Default: 9606 (Human, Homo sapiens). Currently supported options:
+\itemize{
+\item 9606 = Human (Homo sapiens)
+\item 9598 = Chimpanzee (Pan troglodytes)
+\item 9544 = Rhesus monkey (Macaca mulatta)
+\item 10090 = Mouse (Mus musculus)
+\item 10116 = Rat (Rattus norvegicus)
+\item 7955 = Zebrafish (Danio rerio)
+\item 7227 = Fruit fly (Drosophila melanogaster)
+\item 6239 = Worm (Caenorhabditis elegans)
+}}
 }
 \value{
 table with columns; source (character), source_version (character), id (character), name (character), genes (list), ngenes (int)
@@ -17,8 +29,9 @@ Download and import genesets from the GO database using the Bioconductor infrast
 Use the \code{goat::load_genesets_go_fromfile} function for more fine-grained control over the GO database version that you use; it allows you to import NCBI gene2go files
 }
 \details{
-Note that org.Hs.eg.db pulls data semi-annually from NCBI gene2go,
+Note that org.Hs.eg.db pulls data semi-annually from NCBI gene2go (as do similar databases for other species),
 but the GO database version returned by this function is tied to the version of the org.Hs.eg.db on your computer (this is controlled by the Bioconductor infrastructure).
+E.g. in an outdated R installation you may get outdated GO annotations as well.
 
 The actual GO database version that is retrieved is returned by this function in the \code{source_version} column.
 }
