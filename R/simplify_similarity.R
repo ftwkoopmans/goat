@@ -55,15 +55,25 @@ reduce_genesets = function(clusters, simscore_threshold = 0.9, universe_fraction
 
     # deal with edge-cases where after pruning terms, less than X% of the universe is covered.
     # here recursively reinstate ids_ignore that cover the most 'missing genes'
-    foreground_universe = unique(unlist(result_subset$genes_signif))
+    foreground_universe = unique(unlist(result_subset$genes_signif)) # all signif genes
     if(length(foreground_universe) >= 5) {
+      # subset of signif genes present in "reduced gene sets"
       foreground_covered = unique(unlist(result_subset$genes_signif[result_subset$id %in% ids_retain]))
       while(length(foreground_covered) / length(foreground_universe) < signifgenes_fraction) {
+        # subset of singif genes not represented by current "reduced gene sets"
         foreground_universe_missing = setdiff(foreground_universe, foreground_covered)
         # order the ignore IDs by the fraction of genelist they cover (i.e. include terms in order of 'purity')
-        tmp = result_subset |> filter(id %in% ids_ignore & ngenes_signif >= 3) |> mutate(rescue_count = lengths(lapply(genes_signif, intersect, foreground_universe_missing)), rescue_score = rescue_count / ngenes) |> arrange(desc(rescue_score), ngenes_input)
-        # # order the ignore IDs by the absolute number of significant genes they'll contribute
-        # tmp = result_subset |> filter(id %in% ids_ignore) |> mutate(rescue_score = lengths(lapply(genes_signif, intersect, foreground_universe_missing))) |> arrange(desc(rescue_score), ngenes_input)
+        tmp = result_subset |>
+          # update; dropped the requirement for 'at least N signif genes' (for genesets that should be added to results)
+          filter( ! id %in% ids_retain & ngenes_signif >= 1) |>
+          # rescue count represents the number of signif genes we'll be adding to the resulting "reduced gene sets"
+          mutate(rescue_count = lengths(lapply(genes_signif, intersect, foreground_universe_missing)), rescue_score = rescue_count / ngenes) |>
+          arrange(desc(rescue_score), ngenes_input)
+        # something's wrong if we cannot add any 'missing foreground genes' to the results; stop looping
+        if(tmp$rescue_score[1] == 0) {
+          break
+        }
+        # update results
         ids_retain = c(ids_retain, tmp$id[1])
         foreground_covered = unique(unlist(result_subset$genes_signif[result_subset$id %in% ids_retain]))
       }

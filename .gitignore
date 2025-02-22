@@ -1,7 +1,17 @@
+.DS_Store
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
+*.so
+*.dylib
+*.dll
+*.gch
+*.pch
+*.slo
+*.lo
+*.o
+*.obj
 DESCRIPTION-github
 DESCRIPTION-cran
 CRAN-SUBMISSION
