@@ -17,7 +17,7 @@
 #' @return the genesets table from the `clusters` parameter, with results in column "signif_and_reduced"
 #' @export
 reduce_genesets = function(clusters, simscore_threshold = 0.9, universe_fraction = 0.25, signifgenes_fraction = 0.9) {
-  ngenes_signif = genes_signif = rescue_count = ngenes = rescue_score = ngenes_input = NULL # fix invisible bindings R package NOTE
+  id = ngenes_signif = genes_signif = rescue_count = ngenes = rescue_score = ngenes_input = NULL # fix invisible bindings R package NOTE
   # init result column
   clusters$genesets = clusters$genesets |> mutate(signif_and_reduced = signif)
 
