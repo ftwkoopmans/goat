@@ -17,7 +17,7 @@ e.g. \code{output_dir="~/data"} on unix systems, \code{output_dir="C:/data"} on 
 
 \item{type}{the type of genesets to download. Currently, only "GO" is supported (default)}
 
-\item{version}{the dataset version. This must be a date in format YYYY-MM-DD (for example; "2024-01-01") OR be left empty (NA or empty string, the default) to automatically download the latest version.}
+\item{version}{the dataset version. This must be a date in format YYYY-MM-DD (example value you may use: "2024-01-01") OR be left empty (NA or empty string, the default) to automatically download the latest version.}
 
 \item{ignore_cache}{boolean, set to TRUE to force re-download and ignore cached data, if any. Default: FALSE}
 }

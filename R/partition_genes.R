@@ -15,6 +15,7 @@
 #'
 #' # Download an example gene list, i.e. one of the datasets analyzed in the GOAT manuscript.
 #' datasets = download_goat_manuscript_data(output_dir)
+#' if(!is.null(datasets)) {
 #' genelist = datasets$`Wingo 2020:mass-spec:PMID32424284`
 #'
 #' # example 1: significant hits
@@ -28,6 +29,7 @@
 #' # example 3: top 10% 'best' p-values
 #' genelist = partition_genes(genelist, col="pvalue", decreasing=FALSE, fraction = 0.1)
 #' cat(sum(genelist$signif), "/", nrow(genelist), "are signif\n")
+#' }
 #' }
 #' @param genes gene tibble where each row is a unique gene, must contain column name `col`
 #' @param col column name in `genes`

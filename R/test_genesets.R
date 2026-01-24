@@ -23,10 +23,12 @@
 #'
 #' # download an example gene list
 #' datasets = download_goat_manuscript_data(output_dir)
+#' if(!is.null(datasets)) {
 #' genelist = datasets$`Wingo 2020:mass-spec:PMID32424284`
 #'
 #' # download GO genesets
 #' genesets_asis = download_genesets_goatrepo(output_dir)
+#' if(!is.null(genesets_asis)) {
 #'
 #' # filter genesets for sufficient overlap with the genelist, then apply GOAT
 #' genesets_filtered = filter_genesets(genesets_asis, genelist)
@@ -35,6 +37,8 @@
 #'
 #' # print first 10 rows of the result table
 #' print(result |> select(source, name, ngenes, pvalue_adjust) |> utils::head(n=10))
+#' }
+#' }
 #' }
 #' @param genesets tibble with genesets, must contain columns 'source', 'source_version', 'id', 'name', 'genes', 'ngenes', 'ngenes_signif'
 #' @param genelist tibble with genes, must contain column 'gene' and 'test'. gene = character column, which are matched against list column 'genes' in genesets tibble. test = boolean column (you can set all to FALSE if not performing Fisher-exact or hypergeometric test downstream)

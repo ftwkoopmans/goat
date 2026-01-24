@@ -20,14 +20,18 @@
 #'
 #' ## first run the default example from test_genesets() to obtain input data
 #' datasets = download_goat_manuscript_data(output_dir)
+#' if(!is.null(datasets)) {
 #' genelist = datasets$`Wingo 2020:mass-spec:PMID32424284`
 #' genesets_asis = download_genesets_goatrepo(output_dir)
 #' genesets_filtered = filter_genesets(genesets_asis, genelist)
+#' if(!is.null(genesets_asis)) {
 #'
 #' ## example: same results between Fisher-exact and hypergeometric tests
 #' result_hg = test_genesets_hypergeometric(genesets_filtered, genelist, require_nsignif = 3L)
 #' result_fe = test_genesets_fisherexact(genesets_filtered, genelist, require_nsignif = 3L)
 #' all.equal(result_hg$pvalue, result_fe$pvalue)
+#' }
+#' }
 #' }
 #' @param genesets tibble with genesets, must contain columns 'id', 'ngenes' and 'ngenes_signif'
 #' @param genelist tibble with genes, must contain column 'signif'. The number of rows in this table (where signif is not NA)

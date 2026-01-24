@@ -55,8 +55,10 @@ output_dir = tempdir()
 
 ## first run the default example from test_genesets() to obtain geneset results
 datasets = download_goat_manuscript_data(output_dir)
+if(!is.null(datasets)) {
 genelist = datasets$`Wingo 2020:mass-spec:PMID32424284`
 genesets_asis = download_genesets_goatrepo(output_dir)
+if(!is.null(genesets_asis)) {
 genesets_filtered = filter_genesets(genesets_asis, genelist)
 result = test_genesets(genesets_filtered, genelist, method = "goat",
   score_type = "effectsize", padj_method = "bonferroni", padj_cutoff = 0.05)
@@ -80,5 +82,7 @@ result_subset = result |>
 pdf(paste0(output_dir, "/volcano_signif_ngenes50_directionality06.pdf"), width = 4, height = 4)
 plot_volcano(result_subset, genelist, topn_labels = 10)
 dev.off()
+}
+}
 }
 }

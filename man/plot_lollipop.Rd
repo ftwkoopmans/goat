@@ -71,8 +71,10 @@ output_dir = tempdir()
 
 ## first run the default example from test_genesets() to obtain geneset results
 datasets = download_goat_manuscript_data(output_dir)
+if(!is.null(datasets)) {
 genelist = datasets$`Wingo 2020:mass-spec:PMID32424284`
 genesets_asis = download_genesets_goatrepo(output_dir)
+if(!is.null(genesets_asis)) {
 genesets_filtered = filter_genesets(genesets_asis, genelist)
 result = test_genesets(genesets_filtered, genelist, method = "goat",
   score_type = "effectsize", padj_method = "bonferroni", padj_cutoff = 0.05)
@@ -97,5 +99,7 @@ plot_lollipop(
   result, output_dir, plot_type = "lollipop", topn = 50,
   score_xaxis = "minlogp", score_color = "oddsratio"
 )
+}
+}
 }
 }

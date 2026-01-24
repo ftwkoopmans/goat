@@ -39,9 +39,11 @@ download_goat_manuscript_data = function(output_dir, ignore_cache = FALSE) {
   url = "https://github.com/ftwkoopmans/goat/raw/main/analyses/goat_manuscript_datasets.rda"
   if(ignore_cache || !file.exists(filename)) {
     message(paste("downloading", url, "..."))
-    utils::download.file(url, filename, mode = "wb")
+    tryCatch(utils::download.file(url, filename, mode = "wb"), warning = function(w) w, error = function(e) e)
     if(!file.exists(filename)) {
-      stop(sprintf(sprintf_template_downloadfail, url, filename))
+      message(sprintf(sprintf_template_downloadfail, url, filename))
+      return(NULL)
+      # stop(sprintf(sprintf_template_downloadfail, url, filename))
     }
     message(paste0("downloaded data was stored at: ", filename))
   } else {
@@ -54,7 +56,9 @@ download_goat_manuscript_data = function(output_dir, ignore_cache = FALSE) {
 
   # validate that the expected variable is present
   if(!is.list(e$goat_manuscript_datasets)) {
-    stop("failed to load RData file; it did not contain expected variable 'goat_manuscript_datasets'")
+    # stop("failed to load RData file; it did not contain expected variable 'goat_manuscript_datasets'")
+    message("failed to load RData file; it did not contain expected variable 'goat_manuscript_datasets'")
+    return(NULL)
   }
 
   return(e$goat_manuscript_datasets)
@@ -98,7 +102,7 @@ download_goat_manuscript_data = function(output_dir, ignore_cache = FALSE) {
 #' @param output_dir full path to the directory where the downloaded files should be stored. Directory is created if it does not exist.
 #' e.g. `output_dir="~/data"` on unix systems, `output_dir="C:/data"` on Windows, or set to `output_dir=getwd()` to write output to the current working directory
 #' @param type the type of genesets to download. Currently, only "GO" is supported (default)
-#' @param version the dataset version. This must be a date in format YYYY-MM-DD (for example; "2024-01-01") OR be left empty (NA or empty string, the default) to automatically download the latest version.
+#' @param version the dataset version. This must be a date in format YYYY-MM-DD (example value you may use: "2024-01-01") OR be left empty (NA or empty string, the default) to automatically download the latest version.
 #' @param ignore_cache boolean, set to TRUE to force re-download and ignore cached data, if any. Default: FALSE
 #' @return result from respective geneset parser function. e.g. if parameter `type` was set to"GO" (default), this function returns the result of `load_genesets_go_fromfile()`. These data returned by this function is typically used as input for `filter_genesets()`, c.f. full example at documentation for test_genesets()
 #' @export
@@ -121,8 +125,11 @@ download_genesets_goatrepo = function(output_dir, type = "GO", version = "", ign
     # if no version is provided, first download an overview of all available versions and identify the latest release
     if(is.na(version) || version == "") {
       all_versions = available_genesets_goatrepo()
+      if(is.null(all_versions)) {
+        return(NULL)
+      }
       version = sort(unique(all_versions$date), decreasing = TRUE)[1] # sort all dates, take largest value
-      message(paste("the most recent available is version:", version))
+      message(paste("the most recent version available is:", version))
     }
 
     file_g2g = sprintf("%s/gene2go_%s.gz", output_dir, version)
@@ -135,9 +142,11 @@ download_genesets_goatrepo = function(output_dir, type = "GO", version = "", ign
     # attempt to download if not available on disk
     if(ignore_cache || !file.exists(file_g2g)) {
       message(paste("downloading", url_g2g, "..."))
-      utils::download.file(url_g2g, file_g2g, mode = "wb")
+      tryCatch(utils::download.file(url_g2g, file_g2g, mode = "wb"), warning = function(w) w, error = function(e) e)
       if(!file.exists(file_g2g)) {
-        stop(sprintf(sprintf_template_downloadfail, url_g2g, file_g2g))
+        message(sprintf(sprintf_template_downloadfail, url_g2g, file_g2g))
+        return(NULL)
+        # stop(sprintf(sprintf_template_downloadfail, url_g2g, file_g2g))
       }
       any_download = TRUE
     }
@@ -145,9 +154,11 @@ download_genesets_goatrepo = function(output_dir, type = "GO", version = "", ign
     # attempt to download if not available on disk
     if(ignore_cache || !file.exists(file_obo)) {
       message(paste("downloading", url_obo, "..."))
-      utils::download.file(url_obo, file_obo, mode = "wb")
+      tryCatch(utils::download.file(url_obo, file_obo, mode = "wb"), warning = function(w) w, error = function(e) e)
       if(!file.exists(file_obo)) {
-        stop(sprintf(sprintf_template_downloadfail, url_obo, file_obo))
+        message(sprintf(sprintf_template_downloadfail, url_obo, file_obo))
+        return(NULL)
+        # stop(sprintf(sprintf_template_downloadfail, url_obo, file_obo))
       }
       any_download = TRUE
     }
@@ -173,15 +184,21 @@ download_genesets_goatrepo = function(output_dir, type = "GO", version = "", ign
 #' Yields a table that describes available gene sets. You can download the actual data for the described versions with `download_genesets_goatrepo()`.
 #' @export
 available_genesets_goatrepo = function() {
+  sprintf_template_downloadfail = "failed to download %s , probably due to internet connection issues (try to download the here mentioned URL by copy/pasting in your browser).\nIf your internet connection seems to work; Note that you can also hardcode a version parameter in download_genesets_goatrepo() (ergo this additional step of finding the latest version is skipped). See the download_genesets_goatrepo() function documentation for an example"
+
   url = "https://github.com/ftwkoopmans/goat/raw/data/go/index.tsv"
   message(paste("downloading", url, "..."))
-  x = data.table::fread(url, colClasses = "character", data.table = FALSE)
+  x = tryCatch(data.table::fread(url, colClasses = "character", data.table = FALSE), warning = function(w) w, error = function(e) e)
   if(length(x) < 2 || !is.data.frame(x) || nrow(x) == 0) {
-    stop(paste("failed to download", url))
+    message(sprintf(sprintf_template_downloadfail, url))
+    return(NULL)
+    # stop(paste("failed to download", url))
   }
   if(ncol(x) != 2 || !all(colnames(x) %in% c("date", "file"))) {
     print(x)
-    stop("downloaded table should contain exactly 2 columns, with column names 'date' and 'file'")
+    message("downloaded table should contain exactly 2 columns, with column names 'date' and 'file'")
+    return(NULL)
+    # stop("downloaded table should contain exactly 2 columns, with column names 'date' and 'file'")
   }
   return(tibble::as_tibble(x))
 }

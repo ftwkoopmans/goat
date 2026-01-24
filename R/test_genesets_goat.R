@@ -16,8 +16,10 @@
 #'
 #' ## first run the default example from test_genesets() to obtain input data
 #' datasets = download_goat_manuscript_data(output_dir)
+#' if(!is.null(datasets)) {
 #' genelist = datasets$`Wingo 2020:mass-spec:PMID32424284`
 #' genesets_asis = download_genesets_goatrepo(output_dir)
+#' if(!is.null(genesets_asis)) {
 #' genesets_filtered = filter_genesets(genesets_asis, genelist)
 #'
 #' ### we here compare GOAT with precomputed null distributions against
@@ -48,6 +50,8 @@
 #'
 #' summary(minlog10_fixzero(result_precomputed$pvalue) -
 #'         minlog10_fixzero(result_bootstrapped$pvalue))
+#' }
+#' }
 #' }
 #' @param genesets genesets data.frame, must contain columns; "source", "id", "genes", "ngenes"
 #' @param genelist genelist data.frame, must contain columns "gene" and "pvalue"/"effectsize" (depending on parameter `score_type`)

@@ -62,10 +62,12 @@ output_dir = tempdir()
 
 # download an example gene list
 datasets = download_goat_manuscript_data(output_dir)
+if(!is.null(datasets)) {
 genelist = datasets$`Wingo 2020:mass-spec:PMID32424284`
 
 # download GO genesets
 genesets_asis = download_genesets_goatrepo(output_dir)
+if(!is.null(genesets_asis)) {
 
 # filter genesets for sufficient overlap with the genelist, then apply GOAT
 genesets_filtered = filter_genesets(genesets_asis, genelist)
@@ -74,5 +76,7 @@ result = test_genesets(genesets_filtered, genelist, method = "goat",
 
 # print first 10 rows of the result table
 print(result |> select(source, name, ngenes, pvalue_adjust) |> utils::head(n=10))
+}
+}
 }
 }
